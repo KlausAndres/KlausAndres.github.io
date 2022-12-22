@@ -2,28 +2,42 @@ body {
     font-family: 'Century Gothic', Arial, sans-serif;
     font-size: 16px;
     color: rgb(80, 80, 80);
-    width: 600px;
 }
 
 h1 {
-    text-align: center;
+    text-align: left;
+    margin: 10px;
 }
 
 p {
     line-height: 140%;
     font-size: 110%;
     text-align: justify;
-
 }
 
 a {
     color: rgb(80, 80, 80);
-    font-size: 110%
+    font-size: 110%;
+    float: right;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
-img {
+
+.picture_big {
     width: 575px;
     border: 1px solid lightgray;
     border-radius: 25px;
     padding: 10px;
+}
+
+.picture_small {
+    width: 100px;
+    float: left;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.container {
+    width: 600px;
 }
