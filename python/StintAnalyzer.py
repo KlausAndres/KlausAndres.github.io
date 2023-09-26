@@ -30,12 +30,18 @@ class StintAnalyzer:
             self.setup_stintanalyzer()
  
 
-
     def load_df1(self, buffer):
         self.df1=pd.read_csv(buffer)
         self.df1_name = 'Stint 1'
-        self.df2 = pd.read_csv('stint_2c.csv')
+        # self.df2 = pd.read_csv('stint_2c.csv')
+        # self.df2_name = 'Stint 2'
+        # self.setup_stintanalyzer()
+
+
+    def load_df2(self, buffer):
+        self.df2=pd.read_csv(buffer)
         self.df2_name = 'Stint 2'
+        
         self.setup_stintanalyzer()
 
 
@@ -45,7 +51,6 @@ class StintAnalyzer:
         self._set_actual_lap_time()
         self.delete_laps_df1(self.df1_skip_laps)
         self.delete_laps_df2(self.df2_skip_laps)
-
 
 
     def _set_actual_lap_time(self):
@@ -164,6 +169,7 @@ class StintAnalyzer:
         fig.legend()
 
         plt.tight_layout()
+        return fig
 
 
     def get_speed_mean_graph(self):
@@ -197,6 +203,7 @@ class StintAnalyzer:
 
         fig.legend()
         plt.tight_layout()
+        return fig
 
 
     def get_speed_min_graph(self):
@@ -230,6 +237,7 @@ class StintAnalyzer:
 
         fig.legend()
         plt.tight_layout()
+        return fig
 
 
     def get_speed_track_map(self):
@@ -258,6 +266,7 @@ class StintAnalyzer:
         axes[0].legend(frameon=False)
         axes[1].legend(frameon=False)
         plt.tight_layout()
+        return fig
 
 
     def get_computer_performance_graph(self):
@@ -274,6 +283,7 @@ class StintAnalyzer:
         self.df2.CpuUsageBG.plot(title ='CPU Usage BG '+self.df2_name, kind='hist', ax=axes[3, 1], bins=25, xlabel='Percent of available tim bg thread took with a 1 sec avg', yticks=[], ylabel='')
 
         plt.tight_layout()
+        return fig
 
 
     def get_general_conditions_graph(self):
@@ -293,6 +303,7 @@ class StintAnalyzer:
         self.df2.RelativeHumidity.plot(title='Relative Humidity '+self.df2_name, kind='line', ax=axes[4, 1], xlabel='Session Progress', xticks=[], ylabel='%')
 
         plt.tight_layout()
+        return fig
 
 
     def get_car_setup_graph(self):
@@ -321,6 +332,8 @@ class StintAnalyzer:
         axes[4, 1].bar([0, 1, 2, 3], df2_cold_pressure, tick_label=['LF', 'RF', 'LR', 'RR'])    
 
         plt.tight_layout()
+        return fig
+
 
     def get_fuel_graph(self):
 
@@ -367,6 +380,7 @@ class StintAnalyzer:
 
         plt.tight_layout()
         return fig
+
 
     def get_tyre_pressure_graph(self):
 
@@ -486,6 +500,7 @@ class StintAnalyzer:
         axes[4,1].legend(labels=['Left', 'Middle', 'Right'], frameon=False, fontsize=8)
 
         plt.tight_layout()
+        return fig
 
     
     def get_ride_height_graph(self):
@@ -533,3 +548,4 @@ class StintAnalyzer:
         (self.df2.groupby(by='Lap').RRrideHeight.min()*100).plot(ax=axes[3,1], drawstyle='steps-mid', label = 'mmin')
 
         plt.tight_layout()
+        return fig

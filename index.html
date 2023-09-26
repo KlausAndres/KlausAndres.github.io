@@ -35,14 +35,62 @@
 
         <ol>
             <li>
-                <label for="Upload">File Upload:</label>
-                <input type="file" name="upload" id="upload">
+                <label for="Upload">Stint File Upload:</label>
+                <input type="file" name="upload_1" id="upload_1">
             </li>
+            <li>
+                <label for="Upload">Stint File Upload:</label>
+                <input type="file" name="upload_2" id="upload_2">
+            </li>
+
         </ol>
-    
+
+        <nav class="button-container">
+            <button class="button" type="button" id="laptime" py-click="laptime()">
+                Laptime
+            </button>
+            <button class="button" type="button" id="speed_max" py-click="speed_max()">
+                Speed Max
+            </button>
+            <button class="button" type="button" id="speed_mean" py-click="speed_mean()">
+                Speed Mean
+            </button>
+            <button class="button" type="button" id="speed_min" py-click="speed_min()">
+                Speed Min
+            </button>
+            <button class="button" type="button" id="speed_trackmap" py-click="speed_trackmap()">
+                Speed Trackmap
+            </button>
+            <button class="button" type="button" id="computer_performance" py-click="computer_performance()">
+                Computer Performance
+            </button>
+            <button class="button" type="button" id="general_conditions" py-click="general_conditions()">
+                General Conditions
+            </button>
+            <button class="button" type="button" id="car_setup" py-click="car_setup()">
+                Car Setup
+            </button>
+            <button class="button" type="button" id="fuel" py-click="fuel()">
+                Fuel
+            </button>
+            <button class="button" type="button" id="tyre_pressure" py-click="tyre_pressure()">
+                Tyre Pressure
+            </button>
+            <button class="button" type="button" id="tyre_temp" py-click="tyre_temp()">
+                Tyre Temp
+            </button>
+            <button class="button" type="button" id="ride_height" py-click="ride_height()">
+                Ride Height
+            </button>
+
+
+
+
+
+        </nav>
+
         <section class="output-container">
-            <div id="graph_1" class="graph_1"></div>
-            <div id="graph_2" class="graph_2"></div>
+            <div id="graph" class="graph"></div>
         </section>
             
     </div>
