@@ -1,1 +1,57 @@
-Work in Progress!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="descpription"
+        content="A Stint Analyzing tool for iRacing.">
+    <link rel="stylesheet" href="./ass/fonts/montserrat/webfonts/Montserrat.css">
+    <link rel="stylesheet" href="styles/main.css" />
+
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+
+    <title>iRacing Stint Analyzer</title>
+</head>
+
+<body>
+    <py-config>
+
+        packages = ['matplotlib', 'pandas']
+        
+        [[fetch]]
+        from = "python"
+        files = ["StintAnalyzer.py", "stint_1c.csv", "stint_2c.csv"]
+
+        [splashscreen]
+        enabled = true     
+
+    </py-config>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="heading">iRacing Stint Analyzer</h1>
+        </header>
+
+        <ol>
+            <li>
+                <label for="Upload">File Upload:</label>
+                <input type="file" name="upload" id="upload">
+            </li>
+        </ol>
+    
+        <section class="output-container">
+            <div id="graph_1" class="graph_1"></div>
+            <div id="graph_2" class="graph_2"></div>
+        </section>
+            
+    </div>
+
+    <py-script src="python/main.py"></py-script>
+
+</body>
+
+
+
+
+</html>

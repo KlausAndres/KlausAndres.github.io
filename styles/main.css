@@ -1,0 +1,236 @@
+/* Colors
+    iracing-red: #FD2826;
+    iracing-blue: #1E4488;
+    iracing-orange: #FF6600;
+    iracing-yellow: #FFCC00;
+    iracing-green: #33CC00;
+    iracing-light-blue: #00CCCC;
+*/
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 0.9em; 
+}
+
+body {
+    font-family: "Montserrat", sans-serif;
+    background-color: white;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    min-width: 25rem;
+    max-width: 75rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+/*#region Header*/
+
+.header .heading {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 0.7rem;
+}
+
+/*#endregion*/
+
+/*#region Input*/
+
+.form {
+    font-size: 0.9rem;
+}
+
+.form .input-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    column-gap: 0.5rem;
+}
+
+.form .label-front {
+    width: 40.0%;
+    text-align: right;
+}
+
+.form .label-back {
+    width: 40.0%;  
+}
+
+.form .input {
+    border: 0.5px solid #1E4488; 
+    width: 20%;
+    padding: 0.2rem 0.5rem;
+    border-radius: 99999px;
+    text-align: center;
+    margin: 1.0rem 0rem;
+    font-size: 0.9rem;
+}
+
+.form .input:focus {
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.25);
+    outline-style: none;
+    border-color: #122a54;
+}
+
+.form .input:hover {
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.25);
+    outline-style: none;
+}
+
+/*#endregion*/
+
+/*#region Button*/
+.form .button {
+    display: block;
+    background-color: #1E4488;
+    color: white;
+    padding: 1.0rem 2.5rem;
+    margin: 1.2rem auto 2.2rem auto;
+    text-align: center;
+    border-radius: 99999px;
+    border: none;
+    font-weight: bold;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.2s linear;
+    background-color: #1E4488;
+}
+
+.form .button:hover {
+    background-color: #122a54;
+    cursor: pointer;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.5);
+
+}
+
+.form .button:active {
+    padding: 0.8rem 2.3rem;
+    margin: 1.4rem auto 2.4rem auto;
+    transition: all 0.2s linear;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.5);
+
+}
+
+.from .button:focus {
+    background-color: #122a54;
+    outline-style: none;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.5);
+}
+/*#endregion*/
+
+.output {
+    min-height: 4.2rem;
+    width: 60%;
+    padding: 1rem;
+    border: 0.5px solid #1E4488;    
+    border-radius: 0.5rem;
+    margin: 2.5rem auto 2rem;
+    text-align: center;
+    line-height: 1.2rem;
+    font-size: 0.9rem;
+}
+
+.graph img {
+    display: block;
+    width: 100%;
+    object-fit: cover;
+    margin: 0 auto;
+}
+
+/** Breakpoint: 576px+ */
+@media (min-width: 576px) {}
+
+/** Breakpoint: 768px+ */
+@media (min-width: 768px) {
+
+    .container {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+
+    .wide-ui {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .form {
+        width: 45%;
+    }
+
+    .output-container {
+        width: 55%;
+    }
+
+    .graph img {
+        width: 75%;
+    }
+
+    .button-container::after {
+        height: 0px;
+    }
+
+    .header::after {
+        margin-bottom: 0;
+    }
+
+    .button-container {
+        margin-top: 5rem;
+    }
+
+    .output {
+        width: 100%;
+        min-height: 2.2rem;
+        margin: 2.0rem auto 1.0rem;
+        padding: 0.5rem;
+
+    }
+}
+
+/** Breakpoint: 992px+ */
+@media (min-width: 992px) {}
+
+/** Breakpoint: 1200px+ */
+@media (min-width: 1200px) {
+
+    html {
+        font-size: 1.6em;
+    }
+
+    .graph img {
+        width: 95%;
+    }
+
+    .header .heading {
+        margin: 1.5rem;        
+    }
+
+    .wide-ui {
+        margin-top: 1rem;
+    }
+
+    .output {
+        width: 80%;
+        margin: 2.5rem auto 2rem;
+    }
+
+    .form {
+        margin-top: 0.5rem;
+    }
+
+
+
+
+}
+
+/** Breakpoint: 1400px+ */
+@media (min-width: 1400px) {}
