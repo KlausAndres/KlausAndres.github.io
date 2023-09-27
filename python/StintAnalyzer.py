@@ -96,7 +96,14 @@ class StintAnalyzer:
         for lap in laps:
             self.df2.drop(self.df2[self.df2.Lap == lap].index, inplace=True)
 
-    
+
+    def get_laps_overview(self, dataframe : str) -> pd.DataFrame:
+        if dataframe == 'df1':
+            return self.df1.groupby('Lap').LapActualTime.max().reset_index()
+        elif dataframe == 'df2':
+            return self.df2.groupby('Lap').LapActualTime.max().reset_index()
+
+
     def get_laptime_graph(self):
         
         lap_data_df1 = self.df1.groupby('Lap')['LapActualTime']
@@ -130,141 +137,69 @@ class StintAnalyzer:
         formatter = mpl.ticker.FuncFormatter(lambda s, x: time.strftime('%M:%S:{}'.format(int(s*100%100)), time.gmtime(s)))
         axes[0].yaxis.set_major_formatter(formatter)
 
-        fig.legend()
+        axes[0].legend(frameon = False)
         plt.tight_layout()
         return fig
 
+    def get_speed_graph(self):
 
-    def get_speed_max_graph(self):
-        fig, axes = plt.subplots(1, 2, sharey=True, figsize=(8,5))
-        fig.suptitle('Max. Speed Comparison', fontsize=14, fontweight=600)
-
-        axes[0].set_title(self.df1_name, fontsize=10, fontweight=300)
-        axes[1].set_title(self.df2_name, fontsize=10, fontweight=300)
+        fig, axes = plt.subplots(4, 2, figsize=(8,14), sharey='row')
+        fig.suptitle('Speed Overview', fontsize=14, fontweight=600)
 
         df1_speed = self.df1.groupby(by='Lap').Speed
         df2_speed = self.df2.groupby(by='Lap').Speed
 
-        df1_speed.max().plot(ax=axes[0], color='red', linewidth=2, drawstyle='steps-mid')
-        df2_speed.max().plot(ax=axes[1], color='red', linewidth=2, drawstyle='steps-mid', label='')
+        axes[0, 0].set_title('Max. Speed ' + self.df1_name, fontsize=10, fontweight=300)
+        axes[0, 1].set_title('Max Speed' + self.df2_name, fontsize=10, fontweight=300)
+        df1_speed.max().plot(ax=axes[0, 0], drawstyle='steps-mid')
+        df2_speed.max().plot(ax=axes[0, 1], drawstyle='steps-mid', label='')
+        axes[0, 0].plot(df1_speed.max().index, [df1_speed.max().mean()] * len(df1_speed.max().index), label='mean')
+        axes[0, 0].plot(df1_speed.max().index, [df1_speed.max().median()] * len(df1_speed.max().index), label='median')
+        axes[0, 1].plot(df2_speed.max().index, [df2_speed.max().mean()] * len(df2_speed.max().index), label='')
+        axes[0, 1].plot(df2_speed.max().index, [df2_speed.max().median()] * len(df2_speed.max().index), label='')
+        axes[0, 0].legend(frameon = False)
+        axes[0, 0].set_ylabel('Speed in km/h', fontsize=9)
 
-        axes[0].plot(df1_speed.max().index, [df1_speed.max().mean()] * len(df1_speed.max().index), label='mean')
-        axes[0].plot(df1_speed.max().index, [df1_speed.max().median()] * len(df1_speed.max().index), label='median')
+        axes[1, 0].set_title('Avg. Speed ' + self.df1_name, fontsize=10, fontweight=300)
+        axes[1, 1].set_title('Avg. Speed' + self.df2_name, fontsize=10, fontweight=300)
+        df1_speed.mean().plot(ax=axes[1, 0], drawstyle='steps-mid')
+        df2_speed.mean().plot(ax=axes[1, 1], drawstyle='steps-mid', label='')
+        axes[1, 0].plot(df1_speed.mean().index, [df1_speed.mean().mean()] * len(df1_speed.mean().index), label='mean')
+        axes[1, 0].plot(df1_speed.mean().index, [df1_speed.mean().median()] * len(df1_speed.mean().index), label='median')
+        axes[1, 1].plot(df2_speed.mean().index, [df2_speed.mean().mean()] * len(df2_speed.mean().index), label='')
+        axes[1, 1].plot(df2_speed.mean().index, [df2_speed.mean().median()] * len(df2_speed.mean().index), label='')
+        axes[1, 0].legend(frameon = False)
+        axes[1, 0].set_ylabel('Speed in km/h', fontsize=9)
 
-        axes[1].plot(df2_speed.max().index, [df2_speed.max().mean()] * len(df2_speed.max().index), label='')
-        axes[1].plot(df2_speed.max().index, [df2_speed.max().median()] * len(df2_speed.max().index), label='')
+        axes[2, 0].set_title('Min. Speed ' + self.df1_name, fontsize=10, fontweight=300)
+        axes[2, 1].set_title('Min. Speed' + self.df2_name, fontsize=10, fontweight=300)
+        df1_speed.min().plot(ax=axes[2, 0], drawstyle='steps-mid')
+        df2_speed.min().plot(ax=axes[2, 1], drawstyle='steps-mid', label='')
+        axes[2, 0].plot(df1_speed.min().index, [df1_speed.min().mean()] * len(df1_speed.min().index), label='mean')
+        axes[2, 0].plot(df1_speed.min().index, [df1_speed.min().median()] * len(df1_speed.min().index), label='median')
+        axes[2, 1].plot(df2_speed.min().index, [df2_speed.min().mean()] * len(df2_speed.min().index), label='')
+        axes[2, 1].plot(df2_speed.min().index, [df2_speed.min().median()] * len(df2_speed.min().index), label='')
+        axes[2, 0].legend(frameon = False)
+        axes[2, 0].set_ylabel('Speed in km/h', fontsize=9)
 
-
-
-        axes[0].set_ylabel('Speed in km/h', fontsize=9)
-
-        for axe in axes:
-            for value in 'top right'.split():
-                axe.spines[value].set_visible(False)
-            axes[1].spines['left'].set_visible(False)
-            axe.grid(axis='y', linestyle='--', linewidth=0.5)
-            axe.tick_params(labelsize=9, length=0)
-            axe.set_xlabel('Lap', fontsize=9)
-
-        fig.legend()
-
-        plt.tight_layout()
-        return fig
-
-
-    def get_speed_mean_graph(self):
-        fig, axes = plt.subplots(1, 2, sharey=True, figsize=(8,5))
-        fig.suptitle('Avg. Speed Comparison', fontsize=14, fontweight=600)
-
-        axes[0].set_title(self.df1_name, fontsize=10, fontweight=300)
-        axes[1].set_title(self.df2_name, fontsize=10, fontweight=300)
-
-        df1_speed = self.df1.groupby(by='Lap').Speed
-        df2_speed = self.df2.groupby(by='Lap').Speed
-
-        df1_speed.mean().plot(ax=axes[0], color='red', linewidth=2, drawstyle='steps-mid')
-        df2_speed.mean().plot(ax=axes[1], color='red', linewidth=2, drawstyle='steps-mid', label='')
-
-        axes[0].plot(df1_speed.mean().index, [df1_speed.mean().mean()] * len(df1_speed.mean().index), label='mean')
-        axes[0].plot(df1_speed.mean().index, [df1_speed.mean().median()] * len(df1_speed.mean().index), label='median')
-
-        axes[1].plot(df2_speed.mean().index, [df2_speed.mean().mean()] * len(df2_speed.mean().index), label='')
-        axes[1].plot(df2_speed.mean().index, [df2_speed.mean().median()] * len(df2_speed.mean().index), label='')
-
-        axes[0].set_ylabel('Speed in km/h', fontsize=9)
-
-        for axe in axes:
-            for value in 'top right'.split():
-                axe.spines[value].set_visible(False)
-            axes[1].spines['left'].set_visible(False)
-            axe.grid(axis='y', linestyle='--', linewidth=0.5)
-            axe.tick_params(labelsize=9, length=0)
-            axe.set_xlabel('Lap', fontsize=9)
-
-        fig.legend()
-        plt.tight_layout()
-        return fig
-
-
-    def get_speed_min_graph(self):
-        fig, axes = plt.subplots(1, 2, sharey=True, figsize=(8,5))
-        fig.suptitle('Min. Speed Comparison', fontsize=14, fontweight=600)
-
-        axes[0].set_title(self.df1_name, fontsize=10, fontweight=300)
-        axes[1].set_title(self.df2_name, fontsize=10, fontweight=300)
-
-        df1_speed = self.df1.groupby(by='Lap').Speed
-        df2_speed = self.df2.groupby(by='Lap').Speed
-
-        df1_speed.min().plot(ax=axes[0], color='red', linewidth=2, drawstyle='steps-mid')
-        df2_speed.min().plot(ax=axes[1], color='red', linewidth=2, drawstyle='steps-mid', label='')
-
-        axes[0].plot(df1_speed.min().index, [df1_speed.min().mean()] * len(df1_speed.min().index), label='mean')
-        axes[0].plot(df1_speed.min().index, [df1_speed.min().median()] * len(df1_speed.min().index), label='median')
-
-        axes[1].plot(df2_speed.min().index, [df2_speed.min().mean()] * len(df2_speed.min().index), label='')
-        axes[1].plot(df2_speed.min().index, [df2_speed.min().median()] * len(df2_speed.min().index), label='')
-
-        axes[0].set_ylabel('Speed in km/h', fontsize=9)
-
-        for axe in axes:
-            for value in 'top right'.split():
-                axe.spines[value].set_visible(False)
-            axes[1].spines['left'].set_visible(False)
-            axe.grid(axis='y', linestyle='--', linewidth=0.5)
-            axe.tick_params(labelsize=9, length=0)
-            axe.set_xlabel('Lap', fontsize=9)
-
-        fig.legend()
-        plt.tight_layout()
-        return fig
-
-
-    def get_speed_track_map(self):
-
-        fig, axes = plt.subplots(1, 2, figsize=(12,5))
-        fig.suptitle('Speed during fastest lap', fontsize=14, fontweight=600)
-
-        axes[0].set_title(self.df1_name + ": Fastest lap " + str(self.df1_fastest_lap), fontsize=12, fontweight=400)
-        axes[1].set_title(self.df2_name + ": Fastest lap " + str(self.df2_fastest_lap), fontsize=12, fontweight=400)
-
-        self.df1[self.df1.Lap == self.df1_fastest_lap].plot(ax=axes[0], kind='scatter', x='Lat', y='Lon', s=100, c='Speed', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
-        self.df2[self.df2.Lap == self.df2_fastest_lap].plot(ax=axes[1], kind='scatter', x='Lat', y='Lon', s=100, c='Speed', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
-
-        axes[0].plot(self.df1.iloc[0]['Lat'], self.df1.iloc[0]['Lon'], "ro", label='start/finish line', ms=10)
-        axes[1].plot(self.df2.iloc[0]['Lat'], self.df2.iloc[0]['Lon'], "ro", label='start/finish line', ms=10)
-
-        for axe in axes:
+        fastest_lap_df1 = self.df1.groupby('Lap').LapActualTime.max().idxmin()
+        fastest_lap_df2 = self.df2.groupby('Lap').LapActualTime.max().idxmin()
+        axes[3, 0].set_title(self.df1_name + ": Speed during fastest lap " + str(fastest_lap_df1), fontsize=12, fontweight=400)
+        axes[3, 1].set_title(self.df2_name + ": Speed during fastest lap " + str(fastest_lap_df2), fontsize=12, fontweight=400)
+        self.df1[self.df1.Lap == fastest_lap_df1].plot(ax=axes[3, 0], kind='scatter', x='Lat', y='Lon', s=50, c='Speed', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
+        self.df2[self.df2.Lap == fastest_lap_df2].plot(ax=axes[3, 1], kind='scatter', x='Lat', y='Lon', s=50, c='Speed', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
+        axes[3, 0].plot(self.df1.iloc[0]['Lat'], self.df1.iloc[0]['Lon'], "ro", label='start/finish line', ms=8)
+        axes[3, 1].plot(self.df2.iloc[0]['Lat'], self.df2.iloc[0]['Lon'], "ro", label='start/finish line', ms=8)
+        for axe in [axes[3, 0], axes[3, 1]]:
             for value in 'top right left bottom'.split():
                 axe.spines[value].set_visible(False)
             axe.set_xlabel('')
             axe.set_ylabel('')
+        axes[3, 0].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
+        axes[3, 1].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
+        axes[3, 0].legend(frameon=False)
+        axes[3, 1].legend(frameon=False)
 
-        axes[0].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
-        axes[1].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
-
-        axes[0].legend(frameon=False)
-        axes[1].legend(frameon=False)
         plt.tight_layout()
         return fig
 

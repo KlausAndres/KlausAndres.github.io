@@ -10,8 +10,12 @@ import matplotlib
 import matplotlib.pyplot as plt
 import io
 
+from pyscript import display
+
 
 graph = Element("graph")
+laps_df1 = Element("laps_df1")
+laps_df2 = Element("laps_df2")
 sta = StintAnalyzer()
 
 def read_complete_1(event):
@@ -87,58 +91,55 @@ def process_1(data):
     sta.load_df1(buffer)
 
 
-
 def process_2(data):
     buffer = io.StringIO(data)
     sta.load_df2(buffer)
-
+    laps_df1.write(sta.get_laps_overview('df1'))
+    laps_df2.write(sta.get_laps_overview('df2'))
 
 
 def laptime():
+    plt.close('all')
     fig = sta.get_laptime_graph()
     graph.write(fig)
 
-def speed_max():
-    fig = sta.get_speed_max_graph()
-    graph.write(fig)
-
-def speed_mean():
-    fig = sta.get_speed_mean_graph()
-    graph.write(fig)
-
-def speed_min():
-    fig = sta.get_speed_min_graph()
-    graph.write(fig)
-
-def speed_trackmap():
-    fig = sta.get_speed_track_map()
+def speed():
+    plt.close('all')
+    fig = sta.get_speed_graph()
     graph.write(fig)
 
 def computer_performance():
+    plt.close('all')
     fig = sta.get_computer_performance_graph()
     graph.write(fig)
 
 def general_conditions():
+    plt.close('all')
     fig = sta.get_general_conditions_graph()
     graph.write(fig)
 
 def car_setup():
+    plt.close('all')
     fig = sta.get_car_setup_graph()
     graph.write(fig)
 
 def fuel():
+    plt.close('all')
     fig = sta.get_fuel_graph()
     graph.write(fig)    
 
 def tyre_pressure():
+    plt.close('all')
     fig = sta.get_tyre_pressure_graph()
     graph.write(fig)
 
 def tyre_temp():
+    plt.close('all')
     fig = sta.get_tyre_temperature_graph()
     graph.write(fig)
 
 def ride_height():
+    plt.close('all')
     fig = sta.get_ride_height_graph()
     graph.write(fig)
 

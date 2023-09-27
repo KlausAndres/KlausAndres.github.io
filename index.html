@@ -42,24 +42,22 @@
                 <label for="Upload">Stint File Upload:</label>
                 <input type="file" name="upload_2" id="upload_2">
             </li>
-
         </ol>
+
+        <section>
+            <div id="laps_df1" class="laps_df1" style="display: inline-block;"></div>
+            <div id="laps_df2" class="laps_df2" style="display: inline-block"></div>
+        </section>  
+
+
+
 
         <nav class="button-container">
             <button class="button" type="button" id="laptime" py-click="laptime()">
                 Laptime
             </button>
-            <button class="button" type="button" id="speed_max" py-click="speed_max()">
-                Speed Max
-            </button>
-            <button class="button" type="button" id="speed_mean" py-click="speed_mean()">
-                Speed Mean
-            </button>
-            <button class="button" type="button" id="speed_min" py-click="speed_min()">
-                Speed Min
-            </button>
-            <button class="button" type="button" id="speed_trackmap" py-click="speed_trackmap()">
-                Speed Trackmap
+            <button class="button" type="button" id="speed" py-click="speed()">
+                Speed
             </button>
             <button class="button" type="button" id="computer_performance" py-click="computer_performance()">
                 Computer Performance
@@ -82,11 +80,6 @@
             <button class="button" type="button" id="ride_height" py-click="ride_height()">
                 Ride Height
             </button>
-
-
-
-
-
         </nav>
 
         <section class="output-container">
