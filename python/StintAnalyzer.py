@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import seaborn as sns
 import time
 
 
@@ -33,9 +34,6 @@ class StintAnalyzer:
     def load_df1(self, buffer):
         self.df1=pd.read_csv(buffer)
         self.df1_name = 'Stint 1'
-        # self.df2 = pd.read_csv('stint_2c.csv')
-        # self.df2_name = 'Stint 2'
-        # self.setup_stintanalyzer()
 
 
     def load_df2(self, buffer):
@@ -87,21 +85,36 @@ class StintAnalyzer:
         plt.rcParams['font.family'] = ['Roboto', 'Arial', 'sans-serif']
 
 
+    def _convert_in_min(self, seconds : float) -> str:
+        value = int(seconds*1000%1000)
+        if value == 0:
+            ms = '000'
+        elif value < 10:
+            ms = '00' + str(value)
+        elif value < 100:
+            ms = '0' + str(value)
+        else:
+            ms = str(value)
+        return time.strftime('%M:%S.{}'.format(ms), time.gmtime(seconds))
+
+
     def delete_laps_df1(self, laps : list) -> None:
         for lap in laps:
-            self.df1.drop(self.df1[self.df1.Lap == lap].index, inplace=True)
+            self.df1.drop(self.df1[self.df1.Lap == int(lap)].index, inplace=True)
 
 
     def delete_laps_df2(self, laps: list) -> None:
         for lap in laps:
-            self.df2.drop(self.df2[self.df2.Lap == lap].index, inplace=True)
+            self.df2.drop(self.df2[self.df2.Lap == int(lap)].index, inplace=True)
 
 
     def get_laps_overview(self, dataframe : str) -> pd.DataFrame:
         if dataframe == 'df1':
-            return self.df1.groupby('Lap').LapActualTime.max().reset_index()
+            data = self.df1.groupby('Lap').LapActualTime.max().to_frame()
         elif dataframe == 'df2':
-            return self.df2.groupby('Lap').LapActualTime.max().reset_index()
+            data = self.df2.groupby('Lap').LapActualTime.max().to_frame()
+        data.columns=['Laptime']
+        return data.Laptime.apply(self._convert_in_min).to_frame()
 
 
     def get_laptime_graph(self):
@@ -140,6 +153,7 @@ class StintAnalyzer:
         axes[0].legend(frameon = False)
         plt.tight_layout()
         return fig
+
 
     def get_speed_graph(self):
 
@@ -484,3 +498,113 @@ class StintAnalyzer:
 
         plt.tight_layout()
         return fig
+    
+
+    def get_break_graph(self):
+     
+        fig, axes = plt.subplots(6, 2, figsize=(8,22), sharey='row')
+        fig.suptitle('Brake Overview', fontsize=14, fontweight=600)
+
+
+        # BRAKE Intensity Total
+        sns.violinplot(data=self.df1[self.df1.Brake > 0], y='Brake', cut=0, inner=None, linewidth=1, color='green', ax=axes[0, 0])
+        sns.violinplot(data=self.df2[self.df2.Brake > 0], y='Brake', cut=0, inner=None, linewidth=1, color='green', ax=axes[0, 1])
+        axes[0, 0].set_title('Brake Intensity Total ' + self.df1_name)
+        axes[0, 0].set_ylabel('Intensity in %')
+        axes[0, 0].set_xlabel('Total Count')
+        axes[0, 1].set_title('Brake Intensity Total ' + self.df2_name)
+        axes[0, 1].set_xlabel('Total Count')
+
+
+        # BRAKE Intesity Fastest Lap
+        sns.violinplot(data=self.df1[(self.df1.Brake > 0) & (self.df1.Lap == self.df1_fastest_lap)], y='Brake', cut=0, inner=None, linewidth=1, color='green', ax=axes[1, 0])
+        sns.violinplot(data=self.df2[(self.df2.Brake > 0) & (self.df2.Lap == self.df2_fastest_lap)], y='Brake', cut=0, inner=None, linewidth=1, color='green', ax=axes[1, 1])
+        axes[1, 0].set_title('Brake Intensity ' + self.df1_name + ' fastet lap ' + str(self.df1_fastest_lap))
+        axes[1, 0].set_ylabel('Intensity in %')
+        axes[1, 0].set_xlabel('Total Count')
+        axes[1, 1].set_title('Brake Intensity ' + self.df2_name + ' fastet lap ' + str(self.df2_fastest_lap))
+        axes[1, 1].set_xlabel('Total Count')
+
+        # BRAKE Intensity Lap Overview
+        sns.violinplot(data=self.df1[self.df1.Brake > 0], x='Lap', y='Brake', cut=0, inner=None, linewidth=0, color='green', ax=axes[2, 0])
+        sns.violinplot(data=self.df2[self.df2.Brake > 0], x='Lap', y='Brake', cut=0, inner=None, linewidth=0, color='green', ax=axes[2, 1])
+        axes[2, 0].set_title('Brake Intensity ' + self.df1_name)
+        axes[2, 0].set_ylabel('Intensity in %')
+        axes[2, 1].set_title('Brake Intensity ' + self.df2_name)
+
+
+        # BRAKE POINTS
+        self.df1[self.df1.Lap == self.df1_fastest_lap].plot(title='Brake Points ' + self.df1_name + ': Fastest lap ' + str(self.df1_fastest_lap), ax=axes[3, 0], kind='scatter', x='Lat', y='Lon', s=50, c='Brake', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
+        self.df2[self.df2.Lap == self.df2_fastest_lap].plot(title='Brake Points ' + self.df2_name + ': Fastest lap ' + str(self.df2_fastest_lap), ax=axes[3, 1], kind='scatter', x='Lat', y='Lon', s=50, c='Brake', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
+        axes[3, 0].plot(self.df1.iloc[0]['Lat'], self.df1.iloc[0]['Lon'], "ro", label='start/finish line', ms=10)
+        axes[3, 1].plot(self.df2.iloc[0]['Lat'], self.df2.iloc[0]['Lon'], "ro", label='start/finsih line', ms=10)
+        for axe in [axes[3, 0], axes[3, 1]]:
+            for value in 'top right left bottom'.split():
+                axe.spines[value].set_visible(False)
+            axe.set_xlabel('')
+            axe.set_ylabel('')
+        axes[3, 0].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
+        axes[3, 1].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
+        axes[3, 0].legend(frameon=False)
+        axes[3, 1].legend(frameon=False)
+
+
+        # ABS percentage
+        x1 = list(self.df1.Lap.unique())
+        y1 = []
+        for lap in x1:
+            denominator = self.df1[(self.df1.Lap == lap) & (self.df1.Brake > 0)].BrakeABSactive.count()
+            numerator = self.df1[(self.df1.Lap == lap) & (self.df1.Brake > 0) & (self.df1.BrakeABSactive == 1)].BrakeABSactive.count()
+            y1.append(numerator/denominator*100)
+
+        x2 = list(self.df2.Lap.unique())
+        y2 = []
+        for lap in x2:
+            denominator = self.df2[(self.df2.Lap == lap) & (self.df2.Brake > 0)].BrakeABSactive.count()
+            numerator = self.df2[(self.df2.Lap == lap) & (self.df2.Brake > 0) & (self.df2.BrakeABSactive == 1)].BrakeABSactive.count()
+            y2.append(numerator/denominator*100)
+
+        axes[4,0].bar(x=x1, height=y1, label='ABS pct.', color='green')
+        axes[4,0].plot(x1, [(sum(y1) / len(y1))]*len(x1), color='red', label='mean')
+        axes[4,0].set_title('ABS usage ' + self.df1_name)
+        axes[4,0].set_ylabel('Break under ABS in %')
+        axes[4,0].set_xlabel('Lap')
+        axes[4,1].bar(x=x2, height=y2)
+        axes[4,1].plot(x2, [(sum(y2) / len(y2))]*len(x2), color='red', label='mean')
+        axes[4,1].set_title('ABS usage ' + self.df2_name)
+        axes[4,1].set_xlabel('Lap')
+        axes[4,1].bar(x=x2, height=y2, color='green')
+        axes[4,0].legend(frameon=False)
+
+        y_min = min(min(y1), min(y2))
+        y_max = max(max(y1), max(y2))
+        axes[4,0].set_ylim(y_min * 0.90 , y_max * 1.10)
+
+
+        # ABS BRAKE POINTS
+        self.df1[self.df1.Lap == self.df1_fastest_lap].plot(title='ABS Brake Points ' + self.df1_name + ': Fastest lap ' + str(self.df1_fastest_lap), ax=axes[5, 0], kind='scatter', x='Lat', y='Lon', s=50, c='BrakeABSactive', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
+        self.df2[self.df2.Lap == self.df2_fastest_lap].plot(title='ABS Brake Points ' + self.df2_name + ': Fastest lap ' + str(self.df2_fastest_lap), ax=axes[5, 1], kind='scatter', x='Lat', y='Lon', s=50, c='BrakeABSactive', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
+        axes[5, 0].plot(self.df1.iloc[0]['Lat'], self.df1.iloc[0]['Lon'], "ro", label='start/finish line', ms=10)
+        axes[5, 1].plot(self.df2.iloc[0]['Lat'], self.df2.iloc[0]['Lon'], "ro", label='start/finsih line', ms=10)
+        for axe in [axes[5, 0], axes[5, 1]]:
+            for value in 'top right left bottom'.split():
+                axe.spines[value].set_visible(False)
+            axe.set_xlabel('')
+            axe.set_ylabel('')
+        axes[5, 0].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
+        axes[5, 1].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
+        axes[5, 0].legend(frameon=False)
+        axes[5, 1].legend(frameon=False)
+        plt.tight_layout()
+        return fig
+
+
+
+
+
+
+
+
+
+
+

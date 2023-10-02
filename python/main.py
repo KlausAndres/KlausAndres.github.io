@@ -17,6 +17,8 @@ graph = Element("graph")
 laps_df1 = Element("laps_df1")
 laps_df2 = Element("laps_df2")
 sta = StintAnalyzer()
+inp_del_laps_df1 = Element("inp_del_laps_df1")
+inp_del_laps_df2 = Element("inp_del_laps_df2")
 
 def read_complete_1(event):
 
@@ -85,6 +87,18 @@ def main():
     e2.addEventListener("change", file_event_2, False)
 
 
+def del_laps_df1():
+    sta.delete_laps_df1(inp_del_laps_df1.value.split())
+    inp_del_laps_df1.clear()
+    laps_df1.clear()
+    laps_df1.write(sta.get_laps_overview('df1'))
+    
+def del_laps_df2():
+    sta.delete_laps_df2(inp_del_laps_df2.value.split())
+    inp_del_laps_df2.clear()
+    laps_df2.clear()
+    laps_df2.write(sta.get_laps_overview('df2'))
+
 
 def process_1(data):
     buffer = io.StringIO(data)
@@ -143,6 +157,10 @@ def ride_height():
     fig = sta.get_ride_height_graph()
     graph.write(fig)
 
+def breaking():
+    plt.close('all')
+    fig = sta.get_break_graph()
+    graph.write(fig)
 
 main()
 
