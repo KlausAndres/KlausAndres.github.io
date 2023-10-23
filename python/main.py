@@ -162,6 +162,11 @@ def breaking():
     fig = sta.get_break_graph()
     graph.write(fig)
 
+def throttle():
+    plt.close('all')
+    fig = sta.get_throttle_graph()
+    graph.write(fig)
+
 main()
 
 

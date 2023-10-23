@@ -599,6 +599,87 @@ class StintAnalyzer:
         return fig
 
 
+    def get_throttle_graph(self):
+
+        fig, axes = plt.subplots(7, 2, figsize=(8,27), sharey='row')
+        fig.suptitle('Throttle Overview', fontsize=14, fontweight=600)
+
+        # Throttle Intensity Total
+        sns.violinplot(data=self.df1, y='ThrottleRaw', cut=0, inner=None, linewidth=1, color='blue', ax=axes[0, 0])
+        sns.violinplot(data=self.df2, y='ThrottleRaw', cut=0, inner=None, linewidth=1, color='blue', ax=axes[0, 1])
+        axes[0, 0].set_title('Throttle Intensity Total ' + self.df1_name)
+        axes[0, 0].set_ylabel('Intensity in %')
+        axes[0, 0].set_xlabel('Total Count')
+        axes[0, 1].set_title('Throttle Intensity Total ' + self.df2_name)
+        axes[0, 1].set_xlabel('Total Count')
+
+        # Hist fastest lap
+        self.df1[self.df1.Lap == self.df1_fastest_lap].ThrottleRaw.plot(ax=axes[1, 0], title='Throttle ' + self.df1_name + ' Fastest Lap ' + str(self.df1_fastest_lap), xlabel='Throttle in % ', kind='hist', bins=20, ylabel='count')
+        axes[1, 0].tick_params(left = False, right = False, labelleft = False)
+        self.df2[self.df2.Lap == self.df2_fastest_lap].ThrottleRaw.plot(ax=axes[1, 1], title='Throttle ' + self.df2_name + ' Fastest Lap ' + str(self.df2_fastest_lap), xlabel='Throttle in % ', kind='hist', bins=20, ylabel='count')
+        axes[1, 1].tick_params(left = False, right = False, labelleft = False)
+
+        # Throttle Map
+        self.df1[self.df1.Lap == self.df1_fastest_lap].plot(title='Throttle Map ' + self.df1_name + ': Fastest lap ' + str(self.df1_fastest_lap), ax=axes[2, 0], kind='scatter', x='Lat', y='Lon', s=50, c='ThrottleRaw', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
+        self.df2[self.df2.Lap == self.df2_fastest_lap].plot(title='Throttle Map ' + self.df2_name + ': Fastest lap ' + str(self.df2_fastest_lap), ax=axes[2, 1], kind='scatter', x='Lat', y='Lon', s=50, c='ThrottleRaw', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
+        axes[2, 0].plot(self.df1.iloc[0]['Lat'], self.df1.iloc[0]['Lon'], "ro", label='start/finish line', ms=10)
+        axes[2, 1].plot(self.df2.iloc[0]['Lat'], self.df2.iloc[0]['Lon'], "ro", label='start/finsih line', ms=10)
+        for axe in [axes[2, 0], axes[2, 1]]:
+            for value in 'top right left bottom'.split():
+                axe.spines[value].set_visible(False)
+            axe.set_xlabel('')
+            axe.set_ylabel('')
+        axes[2, 0].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
+        axes[2, 1].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
+        axes[2, 0].legend(frameon=False)
+        axes[2, 1].legend(frameon=False)
+
+        # Gear Usage
+        self.df1.groupby('Gear').Gear.count().plot(kind='bar', ax=axes[3,0], title='Gear Usage ' + self.df1_name, ylabel='count')
+        self.df2.groupby('Gear').Gear.count().plot(kind='bar', ax=axes[3,1], title='Gear Usage ' + self.df2_name, ylabel='count')
+        axes[3, 0].tick_params(left = False, right = False, labelleft = False)
+        axes[3, 1].tick_params(left = False, right = False, labelleft = False)
+
+        # Gear Map
+        self.df1[self.df1.Lap == self.df1_fastest_lap].plot(title='Gear Map ' + self.df1_name + ': Fastest lap ' + str(self.df1_fastest_lap), ax=axes[4, 0], kind='scatter', x='Lat', y='Lon', s=50, c='Gear', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
+        self.df2[self.df2.Lap == self.df2_fastest_lap].plot(title='Gear Map ' + self.df2_name + ': Fastest lap ' + str(self.df2_fastest_lap), ax=axes[4, 1], kind='scatter', x='Lat', y='Lon', s=50, c='Gear', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
+        axes[4, 0].plot(self.df1.iloc[0]['Lat'], self.df1.iloc[0]['Lon'], "ro", label='start/finish line', ms=10)
+        axes[4, 1].plot(self.df2.iloc[0]['Lat'], self.df2.iloc[0]['Lon'], "ro", label='start/finsih line', ms=10)
+        for axe in [axes[4, 0], axes[4, 1]]:
+            for value in 'top right left bottom'.split():
+                axe.spines[value].set_visible(False)
+            axe.set_xlabel('')
+            axe.set_ylabel('')
+        axes[4, 0].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
+        axes[4, 1].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
+        axes[4, 0].legend(frameon=False)
+        axes[4, 1].legend(frameon=False)
+
+        # RPM box plot
+        self.df1.RPM.plot(ax=axes[5, 0], title='RPM ' + self.df1_name, xlabel='RPM', kind='hist', bins=20, ylabel='count')
+        axes[5, 0].tick_params(left = False, right = False, labelleft = False)
+        self.df2.RPM.plot(ax=axes[5, 1], title='RPM ' + self.df2_name, xlabel='RPM', kind='hist', bins=20, ylabel='count')
+        axes[5, 1].tick_params(left = False, right = False, labelleft = False)
+
+        # RPM Map
+        self.df1[self.df1.Lap == self.df1_fastest_lap].plot(title='RPM Map ' + self.df1_name + ': Fastest lap ' + str(self.df1_fastest_lap), ax=axes[6, 0], kind='scatter', x='Lat', y='Lon', s=50, c='RPM', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
+        self.df2[self.df2.Lap == self.df2_fastest_lap].plot(title='RPM Map ' + self.df2_name + ': Fastest lap ' + str(self.df2_fastest_lap), ax=axes[6, 1], kind='scatter', x='Lat', y='Lon', s=50, c='RPM', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
+        axes[6, 0].plot(self.df1.iloc[0]['Lat'], self.df1.iloc[0]['Lon'], "ro", label='start/finish line', ms=10)
+        axes[6, 1].plot(self.df2.iloc[0]['Lat'], self.df2.iloc[0]['Lon'], "ro", label='start/finsih line', ms=10)
+        for axe in [axes[6, 0], axes[6, 1]]:
+            for value in 'top right left bottom'.split():
+                axe.spines[value].set_visible(False)
+            axe.set_xlabel('')
+            axe.set_ylabel('')
+        axes[6, 0].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
+        axes[6, 1].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
+        axes[6, 0].legend(frameon=False)
+        axes[6, 1].legend(frameon=False)
+
+        plt.tight_layout()
+        return fig
+
+
 
 
 
