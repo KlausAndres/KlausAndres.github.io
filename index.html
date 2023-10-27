@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="descpription"
-        content="A Stint Analyzing tool for iRacing.">
-    <link rel="stylesheet" href="./ass/fonts/montserrat/webfonts/Montserrat.css">
+        content="A Stint Analyzer for iRacing.">
+        
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,400;0,600;1,600&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="styles/main.css" />
 
     <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
@@ -30,8 +34,53 @@
 
     <div class="container">
         <header class="header">
-            <h1 class="heading">iRacing Stint Analyzer</h1>
+            <p class="heading"><span class="underline_italic">iRacing</span> <span class="color_red">StintAnalyzer</span></p>
         </header>
+
+        <nav class="button-container">
+            <button class="button" type="button" id="how_to" py-click="how_to()">
+                HOW TO
+            </button>
+            <button class="button" type="button" id="import_stint" py-click="import_stint()">
+                IMPORT STINT
+            </button>            
+            <button class="button" type="button" id="laptime" py-click="laptime()">
+                LAPTIME
+            </button>
+            <button class="button" type="button" id="speed" py-click="speed()">
+                SPEED
+            </button>
+            <button class="button" type="button" id="computer_performance" py-click="computer_performance()">
+                COMPUTER PERFORMANCE
+            </button>
+            <button class="button" type="button" id="general_conditions" py-click="general_conditions()">
+                GENERAL CONDITIONS
+            </button>
+            <button class="button" type="button" id="car_setup" py-click="car_setup()">
+                CAR SETUP
+            </button>
+            <button class="button" type="button" id="fuel" py-click="fuel()">
+                FUEL
+            </button>
+            <button class="button" type="button" id="tyre_pressure" py-click="tyre_pressure()">
+                TIRE PRESSURE
+            </button>
+            <button class="button" type="button" id="tyre_temp" py-click="tyre_temp()">
+                TIRE TEMP
+            </button>
+            <button class="button" type="button" id="ride_height" py-click="ride_height()">
+                RIDE HEIGHT
+            </button>
+            <button class="button" type="button" id="brake" py-click="brake()">
+                BRAKE
+            </button>
+            <button class="button" type="button" id="throttle" py-click="throttle()">
+                THROTTLE
+            </button>
+        </nav>
+
+        <hr>
+
 
         <ol>
             <li>
@@ -66,39 +115,6 @@
 
 
         <nav class="button-container">
-            <button class="button" type="button" id="laptime" py-click="laptime()">
-                Laptime
-            </button>
-            <button class="button" type="button" id="speed" py-click="speed()">
-                Speed
-            </button>
-            <button class="button" type="button" id="computer_performance" py-click="computer_performance()">
-                Computer Performance
-            </button>
-            <button class="button" type="button" id="general_conditions" py-click="general_conditions()">
-                General Conditions
-            </button>
-            <button class="button" type="button" id="car_setup" py-click="car_setup()">
-                Car Setup
-            </button>
-            <button class="button" type="button" id="fuel" py-click="fuel()">
-                Fuel
-            </button>
-            <button class="button" type="button" id="tyre_pressure" py-click="tyre_pressure()">
-                Tyre Pressure
-            </button>
-            <button class="button" type="button" id="tyre_temp" py-click="tyre_temp()">
-                Tyre Temp
-            </button>
-            <button class="button" type="button" id="ride_height" py-click="ride_height()">
-                Ride Height
-            </button>
-            <button class="button" type="button" id="breaking" py-click="breaking()">
-                Break
-            </button>
-            <button class="button" type="button" id="throttle" py-click="throttle()">
-                Throttle
-            </button>
 
 
 
@@ -107,7 +123,6 @@
         <section class="output-container">
             <div id="graph" class="graph"></div>
         </section>
-            
     </div>
 
     <py-script src="python/main.py"></py-script>

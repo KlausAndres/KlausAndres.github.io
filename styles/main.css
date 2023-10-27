@@ -1,11 +1,15 @@
-/* Colors
-    iracing-red: #FD2826;
-    iracing-blue: #1E4488;
-    iracing-orange: #FF6600;
-    iracing-yellow: #FFCC00;
-    iracing-green: #33CC00;
-    iracing-light-blue: #00CCCC;
-*/
+:root{
+    --color_red: #FD2826;
+    --color_blue: #1E4488;
+    --color_orange: #FF6600;
+    --color_yellow: #FFCC00;
+    --color_green: #33CC00;
+    --color_cyan: #00CCCC;
+    --color_grey: #676767;
+    --color_black: #000000;
+    --color_white: #FFFFFF;
+}
+
 
 * {
     box-sizing: border-box;
@@ -16,17 +20,64 @@ html {
 }
 
 body {
-    font-family: "Montserrat", sans-serif;
+    font-family: 'Roboto Condensed', sans-serif;
     background-color: white;
     margin: 0;
     padding: 0;
 }
 
 .container {
-    min-width: 25rem;
-    max-width: 75rem;
+    min-width: 1rem;
+    max-width: 999rem;
     margin-left: auto;
     margin-right: auto;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color_blue);
+    color: var(--color_white);
+    font-size: 2.0rem;
+    font-weight: 600;
+    vertical-align: middle;
+    height: 6.5rem;
+}
+
+.color_red {
+    color: var(--color_red);
+}
+
+.underline_italic {
+    text-decoration: underline;
+    font-style:italic;
+}
+
+.button {
+    border: none;
+    background-color: var(--color_white);
+    color: var(--color_blue);
+    font-weight: 400;
+    font-size: 1.3rem;
+    flex: 1 1 0;
+}
+
+.button:hover {
+    text-decoration: underline;
+}
+
+.button-container {
+    display: flex;
+    height: 6.0rem;
+    justify-content: center;
+    align-items: center;
+}
+
+hr {
+    border-top: 1px solid var(--color_blue);
+    margin-top: 0;
+    margin-bottom: 3rem;
 }

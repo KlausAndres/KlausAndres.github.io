@@ -157,15 +157,21 @@ def ride_height():
     fig = sta.get_ride_height_graph()
     graph.write(fig)
 
-def breaking():
+def brake():
     plt.close('all')
-    fig = sta.get_break_graph()
+    fig = sta.get_brake_graph()
     graph.write(fig)
 
 def throttle():
     plt.close('all')
     fig = sta.get_throttle_graph()
     graph.write(fig)
+
+def how_to():
+    pass
+
+def import_stint():
+    pass
 
 main()
 
