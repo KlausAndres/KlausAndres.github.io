@@ -82,46 +82,40 @@
         <hr>
 
 
-        <ol>
-            <li>
-                <label for="Upload">Stint File Upload:</label>
-                <input type="file" name="upload_1" id="upload_1">
-            </li>
-            <li>
-                <label for="Upload">Stint File Upload:</label>
-                <input type="file" name="upload_2" id="upload_2">
-            </li>
-        </ol>
+        <div class="import" id="import">
+            <ol>
+                <li>
+                    <label for="Upload">Stint File Upload:</label>
+                    <input type="file" name="upload_1" id="upload_1">
+                </li>
+                <li>
+                    <label for="Upload">Stint File Upload:</label>
+                    <input type="file" name="upload_2" id="upload_2">
+                </li>
+            </ol>
 
-        <div style="display: inline-block">
-            Delete Laps Stint 1
-            <input type="text" id="inp_del_laps_df1">
-            <button type="button" id="btn_del_laps_df1" py-click="del_laps_df1()">Delete</button>
+            <div style="display: inline-block">
+                Delete Laps Stint 1
+                <input type="text" id="inp_del_laps_df1">
+                <button type="button" id="btn_del_laps_df1" py-click="del_laps_df1()">Delete</button>
+            </div>
+
+            <div style="display: inline-block">
+                Delete Laps Stint 2
+                <input type="text" id="inp_del_laps_df2">
+                <button type="button" id="btn_del_laps_df2" py-click="del_laps_df2()">Delete</button>
+            </div>
+
+
+            <section>
+                <div id="laps_df1" class="laps_df1" style="display: inline-block;"></div>
+                <div id="laps_df2" class="laps_df2" style="display: inline-block"></div>
+            </section>
         </div>
 
-        <div style="display: inline-block">
-            Delete Laps Stint 2
-            <input type="text" id="inp_del_laps_df2">
-            <button type="button" id="btn_del_laps_df2" py-click="del_laps_df2()">Delete</button>
-        </div>
-
-
-        <section>
-            <div id="laps_df1" class="laps_df1" style="display: inline-block;"></div>
-            <div id="laps_df2" class="laps_df2" style="display: inline-block"></div>
-        </section>  
-
-
-
-
-        <nav class="button-container">
-
-
-
-        </nav>
 
         <section class="output-container">
-            <div id="graph" class="graph"></div>
+            <div id="output" class="output"></div>
         </section>
     </div>
 

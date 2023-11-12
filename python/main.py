@@ -13,7 +13,7 @@ import io
 from pyscript import display
 
 
-graph = Element("graph")
+output = Element("output")
 laps_df1 = Element("laps_df1")
 laps_df2 = Element("laps_df2")
 sta = StintAnalyzer()
@@ -113,65 +113,103 @@ def process_2(data):
 
 
 def laptime():
+    hide_import()
+    show_output()
     plt.close('all')
     fig = sta.get_laptime_graph()
-    graph.write(fig)
+    output.write(fig)
 
 def speed():
+    hide_import()
+    show_output()
     plt.close('all')
     fig = sta.get_speed_graph()
-    graph.write(fig)
+    output.write(fig)
 
 def computer_performance():
+    hide_import()
+    show_output()
     plt.close('all')
     fig = sta.get_computer_performance_graph()
-    graph.write(fig)
+    output.write(fig)
 
 def general_conditions():
+    hide_import()
+    show_output()
     plt.close('all')
     fig = sta.get_general_conditions_graph()
-    graph.write(fig)
+    output.write(fig)
 
 def car_setup():
+    hide_import()
+    show_output()
     plt.close('all')
     fig = sta.get_car_setup_graph()
-    graph.write(fig)
+    output.write(fig)
 
 def fuel():
+    hide_import()
+    show_output()
     plt.close('all')
     fig = sta.get_fuel_graph()
-    graph.write(fig)    
+    output.write(fig)    
 
 def tyre_pressure():
+    hide_import()
+    show_output()
     plt.close('all')
     fig = sta.get_tyre_pressure_graph()
-    graph.write(fig)
+    output.write(fig)
 
 def tyre_temp():
+    hide_import()
+    show_output()
     plt.close('all')
     fig = sta.get_tyre_temperature_graph()
-    graph.write(fig)
+    output.write(fig)
 
 def ride_height():
+    hide_import()
+    show_output()
     plt.close('all')
     fig = sta.get_ride_height_graph()
-    graph.write(fig)
+    output.write(fig)
 
 def brake():
+    hide_import()
+    show_output()
     plt.close('all')
     fig = sta.get_brake_graph()
-    graph.write(fig)
+    output.write(fig)
 
 def throttle():
+    hide_import()
+    show_output()
     plt.close('all')
     fig = sta.get_throttle_graph()
-    graph.write(fig)
+    output.write(fig)
 
 def how_to():
-    pass
+    hide_import()
+    show_output()
+    output.write("I describe in detail how everything works")
 
 def import_stint():
-    pass
+    hide_output()
+    show_import()
+
+def show_import():
+    document.getElementById("import").style.display = "inline";
+
+def hide_import():
+    document.getElementById("import").style.display = "none";
+
+def show_output():
+    document.getElementById("output").style.display = "inline";
+
+def hide_output():
+    document.getElementById("output").style.display = "none";
+
 
 main()
 
