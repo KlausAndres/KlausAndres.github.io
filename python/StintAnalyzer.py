@@ -161,16 +161,21 @@ class StintAnalyzer:
                                         ['avg1', 'avg2'],
                                         ['min1', 'min2'],
                                         ['map1', 'map2'],
-                                        ['comp', 'comp']],
-                                        figsize=(10, 22),
-                                        gridspec_kw={'height_ratios': [1, 1, 1, 1, 1.5]})
+                                        ['comp_fastest', 'comp_fastest'],
+                                        ['diff', 'diff'],
+                                        ['comp_mean', 'comp_mean'],
+                                        ['diff_mean', 'diff_mean'],
+                                        ['const_speed', 'const_speed'],
+                                        ['const_map_1', 'const_map_2']],
+                                        figsize=(12, 38),
+                                        gridspec_kw={'height_ratios': [1, 1, 1, 1.5, 1.5, 0.5, 1.5, 0.5, 0.5, 1.5]})
+
 
         axes['max1'].sharey(axes['max2'])        
         axes['avg1'].sharey(axes['avg2'])        
         axes['min1'].sharey(axes['min2'])        
         axes['map1'].sharey(axes['map2'])
 
-        # fig, axes = plt.subplots(5, 2, figsize=(8,18), sharey='row')
         fig.suptitle('Speed Overview', fontsize=14, fontweight=600)
 
         df1_speed = self.df1.groupby(by='Lap').Speed
@@ -227,13 +232,85 @@ class StintAnalyzer:
         axes['map1'].legend(frameon=False)
         axes['map2'].legend(frameon=False)
 
-        axes['comp'].set_title('Speed Comparsion fastest laps', fontsize=12, fontweight=400)
-        self.df1[self.df1.Lap == self.df1_fastest_lap].plot(x='LapDistPct', y='Speed', ax=axes['comp'], label=self.df1_name + " Lap " + str(self.df1_fastest_lap), linewidth=1)
-        self.df2[self.df2.Lap == self.df2_fastest_lap].plot(x='LapDistPct', y='Speed', ax=axes['comp'], label=self.df2_name + " Lap " + str(self.df2_fastest_lap), linewidth=1)
-        axes['comp'].set_ylabel('Speed in km/h', fontsize=9)
-        axes['comp'].set_xlabel('Lap Distance in %', fontsize=9)
-        axes['comp'].legend(frameon=False)
+        df_fastest_lap_1 = self.df1[self.df1.Lap == self.df1_fastest_lap].copy()
+        df_fastest_lap_2 = self.df2[self.df2.Lap == self.df2_fastest_lap].copy()
 
+        axes['comp_fastest'].set_title('Speed Comparison fastest laps', fontsize=12, fontweight=400)
+        df_fastest_lap_1.plot(x='LapDistPct', y='Speed', ax=axes['comp_fastest'], label=self.df1_name + " Lap " + str(self.df1_fastest_lap), linewidth=1)
+        df_fastest_lap_2.plot(x='LapDistPct', y='Speed', ax=axes['comp_fastest'], label=self.df2_name + " Lap " + str(self.df2_fastest_lap), linewidth=1)
+        axes['comp_fastest'].set_ylabel('Speed in km/h', fontsize=9)
+        axes['comp_fastest'].set_xlabel('Lap Distance in %', fontsize=9)
+        axes['comp_fastest'].legend(frameon=False)
+
+        # Difference Speed Comparison fastest laps
+
+        df_fastest_lap_1['LDP_round'] = df_fastest_lap_1.LapDistPct.round(1)
+        df_fastest_lap_2['LDP_round'] = df_fastest_lap_2.LapDistPct.round(1)
+        fastest_mean_value_1 = df_fastest_lap_1.groupby('LDP_round').Speed.mean()
+        fastest_mean_value_2 = df_fastest_lap_2.groupby('LDP_round').Speed.mean()
+        fastest_index = fastest_mean_value_1.index
+
+        fastest_new_data = pd.DataFrame(data={'mean_val_1': fastest_mean_value_1, 'mean_val_2': fastest_mean_value_2}, index = fastest_index)
+        fastest_new_data['x_value'] = fastest_new_data.index
+        fastest_new_data['fastest_diff'] = fastest_new_data.mean_val_1 - fastest_new_data.mean_val_2
+        fastest_new_data.fastest_diff.plot(kind='line', alpha=1, ax=axes['diff'])
+        max_y = fastest_new_data.fastest_diff.max()
+        min_y = fastest_new_data.fastest_diff.min()
+        if abs(max_y) > abs(min_y):
+            axes['diff'].set_ylim(max_y * -1, max_y)
+        elif abs(max_y) <= abs(min_y):
+            axes['diff'].set_ylim(min_y, abs(min_y))
+        axes['diff'].plot(fastest_index, [0]*len(fastest_index), lw=0.5, color = 'black')
+
+
+        # Speed Comparison mean lap
+
+        self.df1['LDP_round']=self.df1.LapDistPct.round(1)
+        self.df2['LDP_round']=self.df2.LapDistPct.round(1)
+
+        max_value_1 = self.df1.groupby('LDP_round').Speed.max()
+        mean_value_1 = self.df1.groupby('LDP_round').Speed.mean()
+        min_value_1 = self.df1.groupby('LDP_round').Speed.min()
+        std_value_1 = self.df1.groupby('LDP_round').Speed.var()
+        lon_value_1 = self.df1.groupby('LDP_round').Lon.max()
+        lat_value_1 = self.df1.groupby('LDP_round').Lat.max()
+        index_1 = max_value_1.index
+
+        max_value_2 = self.df2.groupby('LDP_round').Speed.max()
+        mean_value_2 = self.df2.groupby('LDP_round').Speed.mean()
+        min_value_2 = self.df2.groupby('LDP_round').Speed.min()
+        std_value_2 = self.df2.groupby('LDP_round').Speed.var()
+        lon_value_2 = self.df2.groupby('LDP_round').Lon.max()
+        lat_value_2 = self.df2.groupby('LDP_round').Lat.max()
+
+        new_data = pd.DataFrame(data={'max_val_1': max_value_1, 'mean_val_1': mean_value_1, 'min_val_1': min_value_1, 'std_val_1': std_value_1, 'lon_val_1': lon_value_1, 'lat_val_1': lat_value_1, 'max_val_2': max_value_2, 'mean_val_2': mean_value_2, 'min_val_2': min_value_2, 'std_val_2': std_value_2, 'lon_val_2': lon_value_2, 'lat_val_2': lat_value_2, }, index = index_1)
+
+        new_data['x_value'] = new_data.index
+        new_data['var_coeff_1'] = new_data.std_val_1 / new_data.mean_val_1
+        new_data['var_coeff_2'] = new_data.std_val_2 / new_data.mean_val_2
+        new_data['mean_diff'] = new_data.mean_val_1 - new_data.mean_val_2
+
+
+        new_data.mean_val_1.plot(ax=axes['comp_mean'])
+        new_data.mean_val_2.plot(ax=axes['comp_mean'])
+        new_data.var_coeff_1.plot(kind='area', alpha=0.15, ax=axes['const_speed'])
+        new_data.var_coeff_2.plot(kind='area', alpha=0.15, ax=axes['const_speed'])
+
+        new_data.mean_diff.plot(kind='line', ax=axes['diff_mean'])
+        max_y = new_data.mean_diff.max()
+        min_y = new_data.mean_diff.min()
+        if abs(max_y) > abs(min_y):
+            axes['diff_mean'].set_ylim(max_y * -1, max_y)
+        elif abs(max_y) <= abs(min_y):
+            axes['diff_mean'].set_ylim(min_y, abs(min_y))
+        axes['diff_mean'].plot(index_1, [0]*len(index_1), lw=0.5, color = 'black')
+
+        axes['const_speed'].plot(index_1, [new_data.var_coeff_1.mean()]*len(index_1), lw=0.5)
+        axes['const_speed'].plot(index_1, [new_data.var_coeff_2.mean()]*len(index_1), lw=0.5)
+
+        # Consistency Map 
+        new_data.plot(kind='scatter', y='lon_val_1', x='lat_val_1', s=80, c='var_coeff_1', ax=axes['const_map_1'])
+        new_data.plot(kind='scatter', y='lon_val_2', x='lat_val_2', s=80, c='var_coeff_2', ax=axes['const_map_2'])
 
         plt.tight_layout()
         return fig

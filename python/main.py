@@ -198,6 +198,15 @@ def import_stint():
     hide_output()
     show_import()
 
+def load_demo_data():
+    sta.load_df1("stint_1c.csv")
+    sta.load_df2("stint_2c.csv")
+    sta.delete_laps_df1([1])
+    sta.delete_laps_df2([12, 13])
+    laps_df1.write(sta.get_laps_overview('df1'))
+    laps_df2.write(sta.get_laps_overview('df2'))
+
+
 def show_import():
     document.getElementById("import").style.display = "inline";
 
@@ -209,6 +218,7 @@ def show_output():
 
 def hide_output():
     document.getElementById("output").style.display = "none";
+
 
 
 main()
