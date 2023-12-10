@@ -192,7 +192,9 @@ def throttle():
 def how_to():
     hide_import()
     show_output()
-    output.write("I describe in detail how everything works")
+    # output.write("I describe in detail how everything works")
+    fig = sta.get_plotly_graph()
+    output.write(fig)
 
 def import_stint():
     hide_output()
