@@ -780,54 +780,98 @@ class StintAnalyzer:
 
 
     def get_plotly_graph(self):
+
         import plotly.graph_objects as go
-        import plotly.figure_factory as ff
 
-        table_data = [['Team', 'Wins', 'Losses', 'Ties'],
-                    ['Montréal<br>Canadiens', 18, 4, 0],
-                    ['Dallas Stars', 18, 5, 0],
-                    ['NY Rangers', 16, 5, 0],
-                    ['Boston<br>Bruins', 13, 8, 0],
-                    ['Chicago<br>Blackhawks', 13, 8, 0],
-                    ['LA Kings', 13, 8, 0],
-                    ['Ottawa<br>Senators', 12, 5, 0]]
+        # Generate dataset
+        import numpy as np
+        np.random.seed(1)
 
-        fig = ff.create_table(table_data, height_constant=60)
+        x0 = np.random.normal(2, 0.4, 400)
+        y0 = np.random.normal(2, 0.4, 400)
+        x1 = np.random.normal(3, 0.6, 600)
+        y1 = np.random.normal(6, 0.4, 400)
+        x2 = np.random.normal(4, 0.2, 200)
+        y2 = np.random.normal(4, 0.4, 200)
 
-        teams = ['Montréal Canadiens', 'Dallas Stars', 'NY Rangers',
-                'Boston Bruins', 'Chicago Blackhawks', 'LA Kings', 'Ottawa Senators']
-        GFPG = [3.54, 3.48, 3.0, 3.27, 2.83, 2.45, 3.18]
-        GAPG = [2.17, 2.57, 2.0, 2.91, 2.57, 2.14, 2.77]
+        # Create figure
+        fig = go.Figure()
 
-        trace1 = go.Scatter(x=teams, y=GFPG,
-                            marker=dict(color='#0099ff'),
-                            name='Goals For<br>Per Game',
-                            xaxis='x2', yaxis='y2')
-        trace2 = go.Scatter(x=teams, y=GAPG,
-                            marker=dict(color='#404040'),
-                            name='Goals Against<br>Per Game',
-                            xaxis='x2', yaxis='y2')
+        # Add traces
+        fig.add_trace(
+            go.Scatter(
+                x=x0,
+                y=y0,
+                mode="markers",
+                marker=dict(color="DarkOrange")
+            )
+        )
 
-        fig.add_traces([trace1, trace2])
+        fig.add_trace(
+            go.Scatter(
+                x=x1,
+                y=y1,
+                mode="markers",
+                marker=dict(color="Crimson")
+            )
+        )
 
-        # initialize xaxis2 and yaxis2
-        fig['layout']['xaxis2'] = {}
-        fig['layout']['yaxis2'] = {}
+        fig.add_trace(
+            go.Scatter(
+                x=x2,
+                y=y2,
+                mode="markers",
+                marker=dict(color="RebeccaPurple")
+            )
+        )
 
-        # Edit layout for subplots
-        fig.layout.xaxis.update({'domain': [0, .5]})
-        fig.layout.xaxis2.update({'domain': [0.6, 1.]})
+        # Add buttons that add shapes
+        cluster0 = [dict(type="circle",
+                                    xref="x", yref="y",
+                                    x0=min(x0), y0=min(y0),
+                                    x1=max(x0), y1=max(y0),
+                                    line=dict(color="DarkOrange"))]
+        cluster1 = [dict(type="circle",
+                                    xref="x", yref="y",
+                                    x0=min(x1), y0=min(y1),
+                                    x1=max(x1), y1=max(y1),
+                                    line=dict(color="Crimson"))]
+        cluster2 = [dict(type="circle",
+                                    xref="x", yref="y",
+                                    x0=min(x2), y0=min(y2),
+                                    x1=max(x2), y1=max(y2),
+                                    line=dict(color="RebeccaPurple"))]
 
-        # The graph's yaxis MUST BE anchored to the graph's xaxis
-        fig.layout.yaxis2.update({'anchor': 'x2'})
-        fig.layout.yaxis2.update({'title': 'Goals'})
+        fig.update_layout(
+            updatemenus=[
+                dict(buttons=list([
+                    dict(label="None",
+                        method="relayout",
+                        args=["shapes", []]),
+                    dict(label="Cluster 0",
+                        method="relayout",
+                        args=["shapes", cluster0]),
+                    dict(label="Cluster 1",
+                        method="relayout",
+                        args=["shapes", cluster1]),
+                    dict(label="Cluster 2",
+                        method="relayout",
+                        args=["shapes", cluster2]),
+                    dict(label="All",
+                        method="relayout",
+                        args=["shapes", cluster0 + cluster1 + cluster2])
+                ]),
+                )
+            ]
+        )
 
-        # Update the margins to add a title and see graph x-labels.
-        fig.layout.margin.update({'t':50, 'b':100})
-        fig.layout.update({'title': '2016 Hockey Stats'})
+        # Update remaining layout properties
+        fig.update_layout(
+            title_text="Highlight Clusters",
+            showlegend=False,
+        )
 
         return fig
-
 
 
 
