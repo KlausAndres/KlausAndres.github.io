@@ -1,5 +1,6 @@
 from StintAnalyzer import StintAnalyzer
-from pyscript import Element
+from pyscript import document
+from pyscript import display
 
 import asyncio
 import js
@@ -10,15 +11,14 @@ import matplotlib
 import matplotlib.pyplot as plt
 import io
 
-from pyscript import display
-
-
-output = Element("output")
-laps_df1 = Element("laps_df1")
-laps_df2 = Element("laps_df2")
 sta = StintAnalyzer()
-inp_del_laps_df1 = Element("inp_del_laps_df1")
-inp_del_laps_df2 = Element("inp_del_laps_df2")
+
+OUTPUT_ID = 'output'
+OUTPUT = document.getElementById('output')
+LAPS_DF1_ID = 'laps_df1'
+LAPS_DF2_ID = 'laps_df2'
+INP_DEL_LAPS_DF1 = document.getElementById('inp_del_laps_df1')
+INP_DEL_LAPS_DF2 = document.getElementById('inp_del_laps_df2')
 
 def read_complete_1(event):
 
@@ -34,8 +34,6 @@ def read_complete_2(event):
     # content = document.getElementById("content");
     # content.innerText = event.target.result
     process_2(event.target.result)
-
-
 
 
 async def process_file_1(x):
@@ -74,7 +72,6 @@ async def process_file_2(x):
 
 def main():
     
-      
     # Create a Python proxy for the callback function
     file_event_1 = create_proxy(process_file_1)
     file_event_2 = create_proxy(process_file_2)
@@ -87,17 +84,15 @@ def main():
     e2.addEventListener("change", file_event_2, False)
 
 
-def del_laps_df1():
-    sta.delete_laps_df1(inp_del_laps_df1.value.split())
-    inp_del_laps_df1.clear()
-    laps_df1.clear()
-    laps_df1.write(sta.get_laps_overview('df1'))
-    
-def del_laps_df2():
-    sta.delete_laps_df2(inp_del_laps_df2.value.split())
-    inp_del_laps_df2.clear()
-    laps_df2.clear()
-    laps_df2.write(sta.get_laps_overview('df2'))
+def del_laps_df1(e):
+    sta.delete_laps_df1(INP_DEL_LAPS_DF1.value.split())
+    INP_DEL_LAPS_DF1.value = ''
+    display(sta.get_laps_overview('df1'), target=LAPS_DF1_ID, append=False)
+      
+def del_laps_df2(e):
+    sta.delete_laps_df2(INP_DEL_LAPS_DF2.value.split())
+    INP_DEL_LAPS_DF2.value = ''
+    display(sta.get_laps_overview('df2'), target=LAPS_DF2_ID, append=False)
 
 
 def process_1(data):
@@ -108,106 +103,105 @@ def process_1(data):
 def process_2(data):
     buffer = io.StringIO(data)
     sta.load_df2(buffer)
-    laps_df1.write(sta.get_laps_overview('df1'))
-    laps_df2.write(sta.get_laps_overview('df2'))
+    display(sta.get_laps_overview('df1'), target='laps_df1', append=False)
+    display(sta.get_laps_overview('df2'), target='laps_df2', append=False)
 
 
-def laptime():
+def laptime(e):
     hide_import()
     show_output()
     plt.close('all')
     fig = sta.get_laptime_graph()
-    output.write(fig)
+    display(fig, target=OUTPUT_ID, append=False)
 
-def speed():
+def speed(e):
     hide_import()
     show_output()
     plt.close('all')
     fig = sta.get_speed_graph()
-    output.write(fig)
+    display(fig, target=OUTPUT_ID, append=False)
 
-def computer_performance():
+def computer_performance(e):
     hide_import()
     show_output()
     plt.close('all')
     fig = sta.get_computer_performance_graph()
-    output.write(fig)
+    display(fig, target=OUTPUT_ID, append=False)
 
-def general_conditions():
+def general_conditions(e):
     hide_import()
     show_output()
     plt.close('all')
     fig = sta.get_general_conditions_graph()
-    output.write(fig)
+    display(fig, target=OUTPUT_ID, append=False)
 
-def car_setup():
+def car_setup(e):
     hide_import()
     show_output()
     plt.close('all')
     fig = sta.get_car_setup_graph()
-    output.write(fig)
+    display(fig, target=OUTPUT_ID, append=False)
 
-def fuel():
+def fuel(e):
     hide_import()
     show_output()
     plt.close('all')
     fig = sta.get_fuel_graph()
-    output.write(fig)    
+    display(fig, target=OUTPUT_ID, append=False)    
 
-def tyre_pressure():
+def tyre_pressure(e):
     hide_import()
     show_output()
     plt.close('all')
     fig = sta.get_tyre_pressure_graph()
-    output.write(fig)
+    display(fig, target=OUTPUT_ID, append=False)
 
-def tyre_temp():
+def tyre_temp(e):
     hide_import()
     show_output()
     plt.close('all')
     fig = sta.get_tyre_temperature_graph()
-    output.write(fig)
+    display(fig, target=OUTPUT_ID, append=False)
 
-def ride_height():
+def ride_height(e):
     hide_import()
     show_output()
     plt.close('all')
     fig = sta.get_ride_height_graph()
-    output.write(fig)
+    display(fig, target=OUTPUT_ID, append=False)
 
-def brake():
+def brake(e):
     hide_import()
     show_output()
     plt.close('all')
     fig = sta.get_brake_graph()
-    output.write(fig)
+    display(fig, target=OUTPUT_ID, append=False)
 
-def throttle():
+def throttle(e):
     hide_import()
     show_output()
     plt.close('all')
     fig = sta.get_throttle_graph()
-    output.write(fig)
+    display(fig, target=OUTPUT_ID, append=False)
 
-def how_to():
+def how_to(e):
     hide_import()
     show_output()
     # output.write("I describe in detail how everything works")
     fig = sta.get_plotly_graph()
-    output.write(fig)
+    display(fig, target=OUTPUT_ID, append=False)
 
-def import_stint():
+def import_stint(e):
     hide_output()
     show_import()
 
-def load_demo_data():
+def load_demo_data(e):
     sta.load_df1("stint_1c.csv")
     sta.load_df2("stint_2c.csv")
     sta.delete_laps_df1([1])
     sta.delete_laps_df2([12, 13])
-    laps_df1.write(sta.get_laps_overview('df1'))
-    laps_df2.write(sta.get_laps_overview('df2'))
-
+    display(sta.get_laps_overview('df1'), target='laps_df1', append=False)
+    display(sta.get_laps_overview('df2'), target='laps_df2', append=False)
 
 def show_import():
     document.getElementById("import").style.display = "inline";
@@ -216,12 +210,10 @@ def hide_import():
     document.getElementById("import").style.display = "none";
 
 def show_output():
-    document.getElementById("output").style.display = "inline";
+    OUTPUT.style.display = "inline";
 
 def hide_output():
-    document.getElementById("output").style.display = "none";
-
-
+    OUTPUT.style.display = "none";
 
 main()
 

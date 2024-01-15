@@ -10,7 +10,6 @@
     --color_white: #FFFFFF;
 }
 
-
 * {
     box-sizing: border-box;
 }
@@ -47,6 +46,10 @@ body {
     height: 6.5rem;
 }
 
+.loading {
+    color: var(--color_blue);
+}
+
 .color_red {
     color: var(--color_red);
 }
@@ -61,7 +64,7 @@ body {
     background-color: var(--color_white);
     color: var(--color_blue);
     font-weight: 400;
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     flex: 1 1 0;
 }
 
@@ -80,4 +83,8 @@ hr {
     border-top: 1px solid var(--color_blue);
     margin-top: 0;
     margin-bottom: 3rem;
+}
+
+.import {
+    display: none;
 }

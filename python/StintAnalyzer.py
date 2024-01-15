@@ -3,7 +3,31 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+
+
 import time
+
+config = dict(displaylogo=False, scrollZoom=True, modeBarButtonsToRemove=['zoomIn', 'zoomOut', 'resetScale'], modeBarButtonsToAdd=['drawline', 'drawopenpath', 'drawcircle', 'eraseshape'])
+
+COLOR_RED = '#FD2826'
+COLOR_BLUE = '#1E4488'
+COLOR_ORANGE = '#FF6600'
+COLOR_YELLOW = '#FFCC00'
+COLOR_GREEN = '#33CC00'
+COLOR_CYAN = '#00CCCC'
+COLOR_GREY = '#676767'
+COLOR_BLACK = '#000000'
+
+TITLE_SIZE = 30
+SUBPLOTS_TITLE_SIZE = 20
+XAXIS_TITLE_SIZE = 14
+XAXIS_TICK_SIZE = 12
+YAXIS_TITLE_SIZE = 14
+YAXIS_TICK_SIZE = 12
+
 
 
 class StintAnalyzer:
@@ -171,7 +195,6 @@ class StintAnalyzer:
                                         figsize=(12, 38),
                                         gridspec_kw={'height_ratios': [1, 1, 1, 1.5, 1.5, 0.5, 1.5, 0.5, 0.5, 1.5]})
 
-
         axes['max1'].sharey(axes['max2'])        
         axes['avg1'].sharey(axes['avg2'])        
         axes['min1'].sharey(axes['min2'])        
@@ -317,6 +340,89 @@ class StintAnalyzer:
         return fig
 
 
+    def get_plotly_graph(self):
+        
+        # Speed Comparison mean lap
+        self.df1['LDP_round']=self.df1.LapDistPct.round(1)
+        self.df2['LDP_round']=self.df2.LapDistPct.round(1)
+
+        mean_value_1 = self.df1.groupby('LDP_round').Speed.mean()
+        mean_value_2 = self.df2.groupby('LDP_round').Speed.mean()
+
+        new_data = pd.DataFrame(data=dict(mean_val_1 = mean_value_1.round(1), mean_val_2 = mean_value_2.round(1)))
+        new_data['x_value'] = new_data.index
+        new_data['mean_diff'] = new_data.mean_val_1 - new_data.mean_val_2
+
+        fig = make_subplots(
+            rows = 2, 
+            cols=1, 
+            subplot_titles=['Total Mean Speed / Speed Difference', ""],             
+            row_heights=[0.8, 0.2],
+            shared_xaxes=True,
+            vertical_spacing=0.01,
+            )
+
+        fig.add_trace(go.Scatter(
+            x = new_data.x_value, 
+            y = new_data.mean_val_1, 
+            name = 'Stint 1', 
+            line=dict(color=COLOR_BLUE, width=1),),
+            row = 1, 
+            col = 1
+        )
+
+        fig.add_trace(go.Scatter(
+            x = new_data.x_value, 
+            y = new_data.mean_val_2, 
+            name = 'Stint 2', 
+            line=dict(color=COLOR_RED, width=1),),
+            row = 1, 
+            col = 1
+        )
+
+        fig.add_trace(go.Scatter(
+            x = new_data.x_value,
+            y = new_data.mean_diff,
+            fill = 'tozeroy',
+            name = 'Diff',
+            line=dict(color=COLOR_BLUE, width=1),),
+            row = 2, 
+            col = 1
+        )
+
+        fig.update_layout(
+            font_family = 'Roboto, sans-serif',
+            title_font_size = TITLE_SIZE,
+            font_color = COLOR_BLACK,
+            title = dict(x=0.5, xanchor = 'center', text='<b>Mean Speed Comparision</b>'),
+            legend_title_text='Stint',
+            hovermode='x',            
+            modebar_remove = ['zoomIn', 'zoomOut', 'resetScale'],
+            modebar_add = ['drawline', 'drawopenpath', 'drawcircle', 'eraseshape'],            
+            height = 800,
+            width = 1400,
+            margin = dict(t=220)
+            )
+        
+        fig.update_annotations(
+            font_size = SUBPLOTS_TITLE_SIZE)
+        
+        fig.update_yaxes(
+            title_text = 'km/h',
+            title_font_size = YAXIS_TITLE_SIZE,
+            tickfont_size = YAXIS_TICK_SIZE,
+            )
+        
+        fig.update_xaxes(
+            title_text = 'Lap Distance in Percentage',
+            row=2, col=1,
+            title_font_size = XAXIS_TITLE_SIZE,
+            tickfont_size = XAXIS_TICK_SIZE,
+        )
+        return fig
+
+        # return fig.show(config=config) # renderer = 'browser'
+        
     def get_computer_performance_graph(self):
         fig, axes = plt.subplots(4, 2, figsize=(8,12), sharey='row')
         fig.suptitle('Computer Performance', fontsize=14, fontweight=600)
@@ -779,102 +885,4 @@ class StintAnalyzer:
         return fig
 
 
-    def get_plotly_graph(self):
-
-        import plotly.graph_objects as go
-
-        # Generate dataset
-        import numpy as np
-        np.random.seed(1)
-
-        x0 = np.random.normal(2, 0.4, 400)
-        y0 = np.random.normal(2, 0.4, 400)
-        x1 = np.random.normal(3, 0.6, 600)
-        y1 = np.random.normal(6, 0.4, 400)
-        x2 = np.random.normal(4, 0.2, 200)
-        y2 = np.random.normal(4, 0.4, 200)
-
-        # Create figure
-        fig = go.Figure()
-
-        # Add traces
-        fig.add_trace(
-            go.Scatter(
-                x=x0,
-                y=y0,
-                mode="markers",
-                marker=dict(color="DarkOrange")
-            )
-        )
-
-        fig.add_trace(
-            go.Scatter(
-                x=x1,
-                y=y1,
-                mode="markers",
-                marker=dict(color="Crimson")
-            )
-        )
-
-        fig.add_trace(
-            go.Scatter(
-                x=x2,
-                y=y2,
-                mode="markers",
-                marker=dict(color="RebeccaPurple")
-            )
-        )
-
-        # Add buttons that add shapes
-        cluster0 = [dict(type="circle",
-                                    xref="x", yref="y",
-                                    x0=min(x0), y0=min(y0),
-                                    x1=max(x0), y1=max(y0),
-                                    line=dict(color="DarkOrange"))]
-        cluster1 = [dict(type="circle",
-                                    xref="x", yref="y",
-                                    x0=min(x1), y0=min(y1),
-                                    x1=max(x1), y1=max(y1),
-                                    line=dict(color="Crimson"))]
-        cluster2 = [dict(type="circle",
-                                    xref="x", yref="y",
-                                    x0=min(x2), y0=min(y2),
-                                    x1=max(x2), y1=max(y2),
-                                    line=dict(color="RebeccaPurple"))]
-
-        fig.update_layout(
-            updatemenus=[
-                dict(buttons=list([
-                    dict(label="None",
-                        method="relayout",
-                        args=["shapes", []]),
-                    dict(label="Cluster 0",
-                        method="relayout",
-                        args=["shapes", cluster0]),
-                    dict(label="Cluster 1",
-                        method="relayout",
-                        args=["shapes", cluster1]),
-                    dict(label="Cluster 2",
-                        method="relayout",
-                        args=["shapes", cluster2]),
-                    dict(label="All",
-                        method="relayout",
-                        args=["shapes", cluster0 + cluster1 + cluster2])
-                ]),
-                )
-            ]
-        )
-
-        # Update remaining layout properties
-        fig.update_layout(
-            title_text="Highlight Clusters",
-            showlegend=False,
-        )
-
-        return fig
-
-
-
-
-
-
+    
