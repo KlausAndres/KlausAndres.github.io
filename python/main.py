@@ -1,38 +1,26 @@
 from StintAnalyzer import StintAnalyzer
-from pyscript import document
 from pyscript import display
 
-import asyncio
-import js
+
 from js import document, FileReader
 from pyodide.ffi import create_proxy
-import pandas as pd
-import matplotlib
-import matplotlib.pyplot as plt
 import io
 
 sta = StintAnalyzer()
 
 OUTPUT_ID = 'output'
 OUTPUT = document.getElementById('output')
+IMPORT = document.getElementById('import')
 LAPS_DF1_ID = 'laps_df1'
 LAPS_DF2_ID = 'laps_df2'
 INP_DEL_LAPS_DF1 = document.getElementById('inp_del_laps_df1')
 INP_DEL_LAPS_DF2 = document.getElementById('inp_del_laps_df2')
 
 def read_complete_1(event):
-
-    # event is ProgressEvent
-    # content = document.getElementById("content");
-    # content.innerText = event.target.result
     process_1(event.target.result)
 
 
 def read_complete_2(event):
-
-    # event is ProgressEvent
-    # content = document.getElementById("content");
-    # content.innerText = event.target.result
     process_2(event.target.result)
 
 
@@ -88,7 +76,8 @@ def del_laps_df1(e):
     sta.delete_laps_df1(INP_DEL_LAPS_DF1.value.split())
     INP_DEL_LAPS_DF1.value = ''
     display(sta.get_laps_overview('df1'), target=LAPS_DF1_ID, append=False)
-      
+
+
 def del_laps_df2(e):
     sta.delete_laps_df2(INP_DEL_LAPS_DF2.value.split())
     INP_DEL_LAPS_DF2.value = ''
@@ -110,86 +99,74 @@ def process_2(data):
 def laptime(e):
     hide_import()
     show_output()
-    plt.close('all')
     fig = sta.get_laptime_graph()
     display(fig, target=OUTPUT_ID, append=False)
 
 def speed(e):
     hide_import()
     show_output()
-    plt.close('all')
     fig = sta.get_speed_graph()
     display(fig, target=OUTPUT_ID, append=False)
 
 def computer_performance(e):
     hide_import()
     show_output()
-    plt.close('all')
     fig = sta.get_computer_performance_graph()
     display(fig, target=OUTPUT_ID, append=False)
 
 def general_conditions(e):
     hide_import()
     show_output()
-    plt.close('all')
     fig = sta.get_general_conditions_graph()
     display(fig, target=OUTPUT_ID, append=False)
 
 def car_setup(e):
     hide_import()
     show_output()
-    plt.close('all')
     fig = sta.get_car_setup_graph()
     display(fig, target=OUTPUT_ID, append=False)
 
 def fuel(e):
     hide_import()
     show_output()
-    plt.close('all')
     fig = sta.get_fuel_graph()
     display(fig, target=OUTPUT_ID, append=False)    
 
 def tyre_pressure(e):
     hide_import()
     show_output()
-    plt.close('all')
     fig = sta.get_tyre_pressure_graph()
     display(fig, target=OUTPUT_ID, append=False)
 
 def tyre_temp(e):
     hide_import()
     show_output()
-    plt.close('all')
     fig = sta.get_tyre_temperature_graph()
     display(fig, target=OUTPUT_ID, append=False)
 
 def ride_height(e):
     hide_import()
     show_output()
-    plt.close('all')
     fig = sta.get_ride_height_graph()
     display(fig, target=OUTPUT_ID, append=False)
 
 def brake(e):
     hide_import()
     show_output()
-    plt.close('all')
     fig = sta.get_brake_graph()
     display(fig, target=OUTPUT_ID, append=False)
 
 def throttle(e):
     hide_import()
     show_output()
-    plt.close('all')
     fig = sta.get_throttle_graph()
     display(fig, target=OUTPUT_ID, append=False)
 
 def how_to(e):
     hide_import()
     show_output()
-    # output.write("I describe in detail how everything works")
-    fig = sta.get_plotly_graph()
-    display(fig, target=OUTPUT_ID, append=False)
+    display(sta.get_speed_comparision(), target=OUTPUT_ID, append=False)
+    OUTPUT.config = {'displayModeBar': False}
 
 def import_stint(e):
     hide_output()
@@ -204,10 +181,10 @@ def load_demo_data(e):
     display(sta.get_laps_overview('df2'), target='laps_df2', append=False)
 
 def show_import():
-    document.getElementById("import").style.display = "inline";
+    IMPORT.style.display = "inline";
 
 def hide_import():
-    document.getElementById("import").style.display = "none";
+    IMPORT.style.display = "none";
 
 def show_output():
     OUTPUT.style.display = "inline";

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,69 +26,38 @@
         addEventListener('py:ready', () => loading.close());
         loading.showModal();
     </script>
-  
-
 </head>
 
 <body>
-
     <dialog id="loading" class="loading">
-        <h1>Loading ... just a moment</h1>
+        <p>Loading ... just a moment</p>
     </dialog>
   
     <div class="container">
         <header class="header">
-            <p class="heading"><span class="underline_italic">iRacing</span> <span class="color_red">StintAnalyzer</span></p>
+            <p><span class="underline_italic">iRacing</span> <span class="color_red">StintAnalyzer</span></p>
         </header>
 
         <nav class="button-container">
-            <button class="button" type="button" id="how_to" py-click="how_to">
-                HOW TO
-            </button>
-            <button class="button" type="button" id="import_stint" py-click="import_stint">
-                IMPORT STINT
-            </button>            
-            <button class="button" type="button" id="laptime" py-click="laptime">
-                LAPTIME
-            </button>
-            <button class="button" type="button" id="speed" py-click="speed">
-                SPEED
-            </button>
-            <button class="button" type="button" id="computer_performance" py-click="computer_performance">
-                COMPUTER PERFORMANCE
-            </button>
-            <button class="button" type="button" id="general_conditions" py-click="general_conditions">
-                GENERAL CONDITIONS
-            </button>
-            <button class="button" type="button" id="car_setup" py-click="car_setup">
-                CAR SETUP
-            </button>
-            <button class="button" type="button" id="fuel" py-click="fuel">
-                FUEL
-            </button>
-            <button class="button" type="button" id="tyre_pressure" py-click="tyre_pressure">
-                TIRE PRESSURE
-            </button>
-            <button class="button" type="button" id="tyre_temp" py-click="tyre_temp">
-                TIRE TEMP
-            </button>
-            <button class="button" type="button" id="ride_height" py-click="ride_height">
-                RIDE HEIGHT
-            </button>
-            <button class="button" type="button" id="brake" py-click="brake">
-                BRAKE
-            </button>
-            <button class="button" type="button" id="throttle" py-click="throttle">
-                THROTTLE
-            </button>
+            <button class="button" type="button" id="how_to" py-click="how_to">HOW TO</button>
+            <button class="button" type="button" id="import_stint" py-click="import_stint">IMPORT STINT</button>            
+            <button class="button" type="button" id="laptime" py-click="laptime">LAPTIME</button>
+            <button class="button" type="button" id="speed" py-click="speed">SPEED</button>
+            <button class="button" type="button" id="computer_performance" py-click="computer_performance">COMPUTER PERFORMANCE</button>
+            <button class="button" type="button" id="general_conditions" py-click="general_conditions">GENERAL CONDITIONS</button>
+            <button class="button" type="button" id="car_setup" py-click="car_setup">CAR SETUP</button>
+            <button class="button" type="button" id="fuel" py-click="fuel">FUEL</button>
+            <button class="button" type="button" id="tyre_pressure" py-click="tyre_pressure">TIRE PRESSURE</button>
+            <button class="button" type="button" id="tyre_temp" py-click="tyre_temp">TIRE TEMP</button>
+            <button class="button" type="button" id="ride_height" py-click="ride_height">RIDE HEIGHT</button>
+            <button class="button" type="button" id="brake" py-click="brake">BRAKE</button>
+            <button class="button" type="button" id="throttle" py-click="throttle">THROTTLE</button>
         </nav>
 
         <hr>
 
         <div class="import" id="import">
-            <button class="button" type="button" id="load_demo_data" py-click="load_demo_data">
-                LOAD DEMO DATA
-            </button>
+            <button class="button" type="button" id="load_demo_data" py-click="load_demo_data">LOAD DEMO DATA</button>
 
             <ol>
                 <li>
@@ -122,8 +92,6 @@
             <div id="output" class="output"></div>
         </section>
     </div>
-    
-    <!--script type="py" src="./python/main.py" ></script-->
 
     <script type="py" src="./python/main.py" config="./pyscript.toml"></script>
 

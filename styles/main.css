@@ -25,6 +25,12 @@ body {
     padding: 0;
 }
 
+.loading {
+    color: var(--color_blue);
+    font-weight: 400;
+    font-size: 2.0rem;
+}
+
 .container {
     min-width: 1rem;
     max-width: 999rem;
@@ -46,10 +52,6 @@ body {
     height: 6.5rem;
 }
 
-.loading {
-    color: var(--color_blue);
-}
-
 .color_red {
     color: var(--color_red);
 }
@@ -59,6 +61,13 @@ body {
     font-style:italic;
 }
 
+.button-container {
+    display: flex;
+    height: 6.0rem;
+    justify-content: center;
+    align-items: center;
+}
+
 .button {
     border: none;
     background-color: var(--color_white);
@@ -66,17 +75,11 @@ body {
     font-weight: 400;
     font-size: 1.1rem;
     flex: 1 1 0;
+    font-family: 'Roboto Condensed', sans-serif;
 }
 
 .button:hover {
     text-decoration: underline;
-}
-
-.button-container {
-    display: flex;
-    height: 6.0rem;
-    justify-content: center;
-    align-items: center;
 }
 
 hr {

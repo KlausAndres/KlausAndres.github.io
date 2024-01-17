@@ -21,8 +21,9 @@ COLOR_CYAN = '#00CCCC'
 COLOR_GREY = '#676767'
 COLOR_BLACK = '#000000'
 
-TITLE_SIZE = 30
-SUBPLOTS_TITLE_SIZE = 20
+BASE_FONT_SIZE = 15
+TITLE_SIZE = BASE_FONT_SIZE * 1.5
+SUBPLOTS_TITLE_SIZE = BASE_FONT_SIZE * 1.1
 XAXIS_TITLE_SIZE = 14
 XAXIS_TICK_SIZE = 12
 YAXIS_TITLE_SIZE = 14
@@ -50,7 +51,9 @@ class StintAnalyzer:
         self.df1_skip_laps = df1_skip_laps
         self.df2_skip_laps = df2_skip_laps
         self.df1_fastest_lap : int
+        self.df1_slowest_lap : int
         self.df2_fastest_lap : int
+        self.df2_slowest_lap : int
 
         if df1_path:
             self.setup_stintanalyzer()
@@ -64,7 +67,6 @@ class StintAnalyzer:
     def load_df2(self, buffer):
         self.df2=pd.read_csv(buffer)
         self.df2_name = 'Stint 2'
-        
         self.setup_stintanalyzer()
 
 
@@ -102,8 +104,13 @@ class StintAnalyzer:
         self.df2.drop(self.df2[self.df2.Lap == self.df2.Lap.max()].index, inplace = True)
         self.df2['LapActualTime'] = self.df2['Lap'].apply(lambda lap: final_dict_df2[lap])
 
+        self._update_fastest_and_slowest_lap()
+
+    def _update_fastest_and_slowest_lap(self):
         self.df1_fastest_lap = self.df1.groupby('Lap').LapActualTime.max().idxmin() 
         self.df2_fastest_lap = self.df2.groupby('Lap').LapActualTime.max().idxmin()
+        self.df1_slowest_lap = self.df1.groupby('Lap').LapActualTime.max().idxmax()
+        self.df2_slowest_lap = self.df2.groupby('Lap').LapActualTime.max().idxmax()
 
 
     def _set_matplotlib_params(self):
@@ -127,10 +134,14 @@ class StintAnalyzer:
         for lap in laps:
             self.df1.drop(self.df1[self.df1.Lap == int(lap)].index, inplace=True)
 
+        self._update_fastest_and_slowest_lap()    
+
 
     def delete_laps_df2(self, laps: list) -> None:
         for lap in laps:
             self.df2.drop(self.df2[self.df2.Lap == int(lap)].index, inplace=True)
+
+        self._update_fastest_and_slowest_lap()
 
 
     def get_laps_overview(self, dataframe : str) -> pd.DataFrame:
@@ -340,89 +351,170 @@ class StintAnalyzer:
         return fig
 
 
-    def get_plotly_graph(self):
+    def get_speed_comparision(self):
         
-        # Speed Comparison mean lap
+        # Create 1000 datasets for LapDistancePercentage -> round on 1 decimal
         self.df1['LDP_round']=self.df1.LapDistPct.round(1)
         self.df2['LDP_round']=self.df2.LapDistPct.round(1)
 
+        # Data for mean laps
         mean_value_1 = self.df1.groupby('LDP_round').Speed.mean()
         mean_value_2 = self.df2.groupby('LDP_round').Speed.mean()
+        data_mean = pd.DataFrame(data=dict(mean_val_1 = mean_value_1.round(1), mean_val_2 = mean_value_2.round(1)))
+        data_mean['x_value'] = data_mean.index
+        data_mean['mean_diff'] = data_mean.mean_val_1 - data_mean.mean_val_2
 
-        new_data = pd.DataFrame(data=dict(mean_val_1 = mean_value_1.round(1), mean_val_2 = mean_value_2.round(1)))
-        new_data['x_value'] = new_data.index
-        new_data['mean_diff'] = new_data.mean_val_1 - new_data.mean_val_2
+        # Data for fastest laps
+        fastest_value_1 = self.df1[self.df1.Lap == self.df1_fastest_lap].groupby('LDP_round').Speed.mean()
+        fastest_value_2 = self.df2[self.df2.Lap == self.df2_fastest_lap].groupby('LDP_round').Speed.mean()
+        data_fastest = pd.DataFrame(data=dict(fastest_val_1 = fastest_value_1.round(1), fastest_val_2 = fastest_value_2.round(1)))
+        data_fastest['x_value'] = data_fastest.index
+        data_fastest['fastest_diff'] = data_fastest.fastest_val_1 - data_fastest.fastest_val_2
 
+        # Data for slowest lap
+        slowest_value_1 = self.df1[self.df1.Lap == self.df1_slowest_lap].groupby('LDP_round').Speed.mean()
+        slowest_value_2 = self.df2[self.df2.Lap == self.df2_slowest_lap].groupby('LDP_round').Speed.mean()
+        data_slowest = pd.DataFrame(data=dict(slowest_val_1 = slowest_value_1.round(1), slowest_val_2 = slowest_value_2.round(1)))
+        data_slowest['x_value'] = data_slowest.index
+        data_slowest['slowest_diff'] = data_slowest.slowest_val_1 - data_slowest.slowest_val_2
+
+        # Create Figure
         fig = make_subplots(
-            rows = 2, 
-            cols=1, 
-            subplot_titles=['Total Mean Speed / Speed Difference', ""],             
+            rows = 2, cols=1,
+            subplot_titles=['Total Speed + Speed Difference'],             
             row_heights=[0.8, 0.2],
             shared_xaxes=True,
-            vertical_spacing=0.01,
-            )
+            vertical_spacing=0.05,
+            x_title='Lap Distance in Percentage',
+            y_title='km/h')
+
+        # ADD DATA FOR MEAN LAP
+        fig.add_trace(go.Scatter(
+            x = data_mean.x_value, 
+            y = data_mean.mean_val_1, 
+            name = self.df1_name, 
+            line=dict(color=COLOR_BLUE, width=1.2), 
+            visible = True,
+            hovertemplate="Speed: %{y}km/h"),
+            row = 1, col = 1)
 
         fig.add_trace(go.Scatter(
-            x = new_data.x_value, 
-            y = new_data.mean_val_1, 
-            name = 'Stint 1', 
-            line=dict(color=COLOR_BLUE, width=1),),
-            row = 1, 
-            col = 1
-        )
+            x = data_mean.x_value, 
+            y = data_mean.mean_val_2, 
+            name = self.df2_name, 
+            line=dict(color=COLOR_RED, width=1.2), 
+            visible = True,
+            hovertemplate="Speed: %{y}km/h"),
+            row = 1, col = 1)
 
         fig.add_trace(go.Scatter(
-            x = new_data.x_value, 
-            y = new_data.mean_val_2, 
-            name = 'Stint 2', 
-            line=dict(color=COLOR_RED, width=1),),
-            row = 1, 
-            col = 1
-        )
-
-        fig.add_trace(go.Scatter(
-            x = new_data.x_value,
-            y = new_data.mean_diff,
+            x = data_mean.x_value,
+            y = data_mean.mean_diff,
             fill = 'tozeroy',
             name = 'Diff',
-            line=dict(color=COLOR_BLUE, width=1),),
+            line=dict(color=COLOR_BLUE, width=1.2),
+            visible = True,
+            hovertemplate="Diff: %{y}km/h"),
+            row = 2, col = 1)
+
+        # ADD DATA FOR FASTEST LAP
+        fig.add_trace(go.Scatter(
+            x = data_fastest.x_value, 
+            y = data_fastest.fastest_val_1, 
+            name = self.df1_name, 
+            line=dict(color=COLOR_BLUE, width=1),
+            visible = False),
+            row = 1, col = 1)
+
+        fig.add_trace(go.Scatter(
+            x = data_fastest.x_value, 
+            y = data_fastest.fastest_val_2, 
+            name = self.df2_name, 
+            line=dict(color=COLOR_RED, width=1),
+            visible = False),
+            row = 1, col = 1)
+
+        fig.add_trace(go.Scatter(
+            x = data_fastest.x_value,
+            y = data_fastest.fastest_diff,
+            fill = 'tozeroy',
+            name = 'Diff',
+            line=dict(color=COLOR_BLUE, width=1),
+            visible = False),
             row = 2, 
-            col = 1
-        )
+            col = 1)
+
+        # ADD DATA FOR SLOWEST LAP
+        fig.add_trace(go.Scatter(
+            x = data_slowest.x_value, 
+            y = data_slowest.slowest_val_1, 
+            name = self.df1_name, 
+            line=dict(color=COLOR_BLUE, width=1),
+            visible = False),
+            row = 1, col = 1)
+
+        fig.add_trace(go.Scatter(
+            x = data_slowest.x_value, 
+            y = data_slowest.slowest_val_2, 
+            name = self.df2_name, 
+            line=dict(color=COLOR_RED, width=1),
+            visible = False),
+            row = 1, col = 1)
+
+        fig.add_trace(go.Scatter(
+            x = data_slowest.x_value,
+            y = data_slowest.slowest_diff,
+            fill = 'tozeroy',
+            name = 'Diff',
+            line=dict(color=COLOR_BLUE, width=1),
+            visible = False),
+            row = 2, 
+            col = 1)
+
 
         fig.update_layout(
-            font_family = 'Roboto, sans-serif',
+            font_family = "'Roboto Condensed',sans-serif",
             title_font_size = TITLE_SIZE,
             font_color = COLOR_BLACK,
-            title = dict(x=0.5, xanchor = 'center', text='<b>Mean Speed Comparision</b>'),
+            title = dict(x=0.5, xanchor = 'center', text='Speed Comparision: All Laps (mean)'),
             legend_title_text='Stint',
             hovermode='x',            
-            modebar_remove = ['zoomIn', 'zoomOut', 'resetScale'],
-            modebar_add = ['drawline', 'drawopenpath', 'drawcircle', 'eraseshape'],            
+            modebar_remove = [],# ['zoomIn', 'zoomOut', 'resetScale'],
+            modebar_add = [], #['drawline', 'drawopenpath', 'drawcircle', 'eraseshape'],         
             height = 800,
             width = 1400,
-            margin = dict(t=220)
+            margin = dict(t=120),
+            template = 'plotly_white'
             )
         
         fig.update_annotations(
             font_size = SUBPLOTS_TITLE_SIZE)
-        
-        fig.update_yaxes(
-            title_text = 'km/h',
-            title_font_size = YAXIS_TITLE_SIZE,
-            tickfont_size = YAXIS_TICK_SIZE,
-            )
-        
-        fig.update_xaxes(
-            title_text = 'Lap Distance in Percentage',
-            row=2, col=1,
-            title_font_size = XAXIS_TITLE_SIZE,
-            tickfont_size = XAXIS_TICK_SIZE,
-        )
+
+
+        button1 = dict(method='update', 
+               args=[{"visible": [True, True, True, False, False, False, False, False, False] },{'title.text': 'Speed Comparision: All Laps (mean)'}], 
+               label="All Laps (mean)" )
+        button2 = dict(method='update', 
+               args=[{"visible": [False, False, False, True, True, True, False, False, False] },{'title.text': 'Speed Comparision: Fastest Lap'}], 
+               label="Fastest Lap" )   
+        button3 = dict(method='update', 
+               args=[{"visible": [False, False, False, False, False, False, True, True, True] },{'title.text': 'Speed Comparision: Slowest Lap'}], 
+               label="Slowest Lap" )
+                 
+        fig.update_layout(
+                 updatemenus =[dict(type='buttons',
+                                    direction='left',
+                                    buttons=[button1, button2, button3],
+                                    x=0.00,
+                                    xanchor="left",
+                                    y=1.10,
+                                    yanchor="top")])
+
         return fig
 
         # return fig.show(config=config) # renderer = 'browser'
-        
+
+
     def get_computer_performance_graph(self):
         fig, axes = plt.subplots(4, 2, figsize=(8,12), sharey='row')
         fig.suptitle('Computer Performance', fontsize=14, fontweight=600)
@@ -884,5 +976,3 @@ class StintAnalyzer:
         plt.tight_layout()
         return fig
 
-
-    
