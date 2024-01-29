@@ -2,9 +2,10 @@ from StintAnalyzer import StintAnalyzer
 from pyscript import display
 
 
-from js import document, FileReader
+from js import document, FileReader, window
 from pyodide.ffi import create_proxy
 import io
+
 
 sta = StintAnalyzer()
 
@@ -165,8 +166,9 @@ def throttle(e):
 def how_to(e):
     hide_import()
     show_output()
-    display(sta.get_speed_comparision(), target=OUTPUT_ID, append=False)
-    OUTPUT.config = {'displayModeBar': False}
+    display(sta.get_speed_per_lap(window.innerWidth), target=OUTPUT_ID, append=False)
+    display(sta.get_speed_comparision(window.innerWidth), target=OUTPUT_ID, append=True)
+    display(sta.get_speed_track_map(window.innerWidth), target=OUTPUT_ID, append=True)
 
 def import_stint(e):
     hide_output()
@@ -181,18 +183,20 @@ def load_demo_data(e):
     display(sta.get_laps_overview('df2'), target='laps_df2', append=False)
 
 def show_import():
-    IMPORT.style.display = "inline";
+    IMPORT.style.display = "block";
 
 def hide_import():
     IMPORT.style.display = "none";
 
 def show_output():
-    OUTPUT.style.display = "inline";
+    OUTPUT.style.display = "block";
 
 def hide_output():
     OUTPUT.style.display = "none";
 
-main()
+# main()
+load_demo_data(0)
+
 
 
 

@@ -6,8 +6,6 @@ import seaborn as sns
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-
-
 import time
 
 config = dict(displaylogo=False, scrollZoom=True, modeBarButtonsToRemove=['zoomIn', 'zoomOut', 'resetScale'], modeBarButtonsToAdd=['drawline', 'drawopenpath', 'drawcircle', 'eraseshape'])
@@ -24,12 +22,16 @@ COLOR_BLACK = '#000000'
 BASE_FONT_SIZE = 15
 TITLE_SIZE = BASE_FONT_SIZE * 1.5
 SUBPLOTS_TITLE_SIZE = BASE_FONT_SIZE * 1.1
+ANNOTATION_FONT_SIZE = BASE_FONT_SIZE * 0.8
 XAXIS_TITLE_SIZE = 14
 XAXIS_TICK_SIZE = 12
 YAXIS_TITLE_SIZE = 14
 YAXIS_TICK_SIZE = 12
 
+ANNOTATION_Y_SHIFT = -50
 
+TRACKDATA = {'barcelona_gp': {19.0:'T1', 21.0: 'T2', 26.6: 'T3', 39.0: 'Rapsol<br>T4', 46.8: 'T5', 51.7: 'T6', 56.0: 'TV3<br>T7', 60.0: 'T8',
+                              63.3: 'T9', 76.0: 'T10', 78.6: 'T11', 81.4: 'T12', 87.1: 'Europcar<br>T13', 89.7: 'RACC<br>T14', 91.2: 'T15', 94.1: 'Catalunya<br>T16'}}
 
 class StintAnalyzer:
 
@@ -105,6 +107,7 @@ class StintAnalyzer:
         self.df2['LapActualTime'] = self.df2['Lap'].apply(lambda lap: final_dict_df2[lap])
 
         self._update_fastest_and_slowest_lap()
+
 
     def _update_fastest_and_slowest_lap(self):
         self.df1_fastest_lap = self.df1.groupby('Lap').LapActualTime.max().idxmin() 
@@ -351,7 +354,290 @@ class StintAnalyzer:
         return fig
 
 
-    def get_speed_comparision(self):
+    def get_speed_per_lap(self, _window_width):
+
+        if _window_width > 1400:
+            height = 800
+        elif _window_width > 1200:
+            height = 700
+        elif _window_width > 992:
+            height = 600
+        elif _window_width > 768:
+            height = 500
+        elif _window_width > 576:
+            height = 400
+        else:
+            height = 300
+
+        # DataFrame for speed
+        df1_speed = self.df1.groupby(by='Lap').Speed
+        df2_speed = self.df2.groupby(by='Lap').Speed
+
+
+        # Create Figure
+        fig = make_subplots(
+            rows = 1, cols=2, 
+            shared_yaxes=True,
+            horizontal_spacing=0.05,
+            subplot_titles=[self.df1_name, self.df2_name])
+
+        #region ADD DATA FOR MAX SPEED
+        fig.add_trace(go.Scatter(
+            x = df1_speed.max().index, 
+            y = df1_speed.max().round(1),
+            line_shape = 'hvh',
+            mode = 'lines', 
+            name = self.df1_name, 
+            line=dict(color=COLOR_BLUE, width=2.0), 
+            visible = True,
+            hovertemplate="Speed: %{y} km/h"),
+            row = 1, col = 1)
+
+        fig.add_trace(go.Scatter(
+            x = df2_speed.max().index, 
+            y = df2_speed.max().round(1), 
+            line_shape = 'hvh',
+            mode = 'lines',
+            name = self.df2_name, 
+            line=dict(color=COLOR_RED, width=2.0), 
+            visible = True,
+            hovertemplate="Speed: %{y} km/h"),
+            row = 1, col = 2)
+
+        fig.add_trace(go.Scatter(
+             x = df1_speed.max().index,
+             y = [df1_speed.max().mean().round(1)]*len(df1_speed.max().index),
+             mode = 'lines',
+             line=dict(color=COLOR_CYAN, width=1.0),
+             visible = True,
+             name = 'mean',
+             hovertemplate='Mean: %{y} km/h'),
+             row = 1, col = 1)
+
+        fig.add_trace(go.Scatter(
+             x = df1_speed.max().index,
+             y = [df1_speed.max().median().round(1)]*len(df1_speed.max().index),
+             mode = 'lines',
+             line=dict(color=COLOR_GREEN, width=1.0),
+             visible = True,
+             name = 'median',
+             hovertemplate='Median: %{y} km/h'),
+             row = 1, col = 1)
+
+        fig.add_trace(go.Scatter(
+             x = df2_speed.max().index,
+             y = [df2_speed.max().mean().round(1)]*len(df2_speed.max().index),
+             mode = 'lines',
+             line=dict(color=COLOR_CYAN, width=1.0),
+             visible = True,
+             hovertemplate='Mean: %{y} km/h',
+             showlegend = False),
+             row = 1, col = 2)
+
+        fig.add_trace(go.Scatter(
+             x = df2_speed.max().index,
+             y = [df2_speed.max().median().round(1)]*len(df2_speed.max().index),
+             mode = 'lines',
+             line=dict(color=COLOR_GREEN, width=1.0),
+             visible = True,
+             hovertemplate='Median: %{y} km/h',
+             showlegend = False),
+             row = 1, col = 2)
+        #endregion
+
+        #region ADD DATA FOR MEAN SPEED
+        fig.add_trace(go.Scatter(
+            x = df1_speed.mean().index, 
+            y = df1_speed.mean().round(1),
+            line_shape = 'hvh',
+            mode = 'lines', 
+            name = self.df1_name, 
+            line=dict(color=COLOR_BLUE, width=2.0), 
+            visible = False,
+            hovertemplate="Speed: %{y} km/h"),
+            row = 1, col = 1)
+
+        fig.add_trace(go.Scatter(
+            x = df2_speed.mean().index, 
+            y = df2_speed.mean().round(1), 
+            line_shape = 'hvh',
+            mode = 'lines',
+            name = self.df2_name, 
+            line=dict(color=COLOR_RED, width=2.0), 
+            visible = False,
+            hovertemplate="Speed: %{y} km/h"),
+            row = 1, col = 2)
+
+        fig.add_trace(go.Scatter(
+             x = df1_speed.mean().index,
+             y = [df1_speed.mean().mean().round(1)]*len(df1_speed.max().index),
+             mode = 'lines',
+             line=dict(color=COLOR_CYAN, width=1.0),
+             visible = False,
+             name = 'mean',
+             hovertemplate='Mean: %{y} km/h'),
+             row = 1, col = 1)
+
+        fig.add_trace(go.Scatter(
+             x = df1_speed.mean().index,
+             y = [df1_speed.mean().median().round(1)]*len(df1_speed.max().index),
+             mode = 'lines',
+             line=dict(color=COLOR_GREEN, width=1.0),
+             visible = False,
+             name = 'median',
+             hovertemplate='Median: %{y} km/h'),
+             row = 1, col = 1)
+
+        fig.add_trace(go.Scatter(
+             x = df2_speed.mean().index,
+             y = [df2_speed.mean().mean().round(1)]*len(df2_speed.max().index),
+             mode = 'lines',
+             line=dict(color=COLOR_CYAN, width=1.0),
+             visible = False,
+             hovertemplate='Mean: %{y} km/h',
+             showlegend = False),
+             row = 1, col = 2)
+
+        fig.add_trace(go.Scatter(
+             x = df2_speed.mean().index,
+             y = [df2_speed.mean().median().round(1)]*len(df2_speed.max().index),
+             mode = 'lines',
+             line=dict(color=COLOR_GREEN, width=1.0),
+             visible = False,
+             hovertemplate='Median: %{y} km/h',
+             showlegend = False),
+             row = 1, col = 2)
+        #endregion
+
+        #region ADD DATA FOR MIN SPEED
+        fig.add_trace(go.Scatter(
+            x = df1_speed.min().index, 
+            y = df1_speed.min().round(1),
+            line_shape = 'hvh',
+            mode = 'lines', 
+            name = self.df1_name, 
+            line=dict(color=COLOR_BLUE, width=2.0), 
+            visible = False,
+            hovertemplate="Speed: %{y} km/h"),
+            row = 1, col = 1)
+
+        fig.add_trace(go.Scatter(
+            x = df2_speed.min().index, 
+            y = df2_speed.min().round(1), 
+            line_shape = 'hvh',
+            mode = 'lines',
+            name = self.df2_name, 
+            line=dict(color=COLOR_RED, width=2.0), 
+            visible = False,
+            hovertemplate="Speed: %{y} km/h"),
+            row = 1, col = 2)
+
+        fig.add_trace(go.Scatter(
+             x = df1_speed.min().index,
+             y = [df1_speed.min().mean().round(1)]*len(df1_speed.max().index),
+             mode = 'lines',
+             line=dict(color=COLOR_CYAN, width=1.0),
+             visible = False,
+             name = 'mean',
+             hovertemplate='Mean: %{y} km/h'),
+             row = 1, col = 1)
+
+        fig.add_trace(go.Scatter(
+             x = df1_speed.min().index,
+             y = [df1_speed.min().median().round(1)]*len(df1_speed.max().index),
+             mode = 'lines',
+             line=dict(color=COLOR_GREEN, width=1.0),
+             visible = False,
+             name = 'median',
+             hovertemplate='Median: %{y} km/h'),
+             row = 1, col = 1)
+
+        fig.add_trace(go.Scatter(
+             x = df2_speed.min().index,
+             y = [df2_speed.min().mean().round(1)]*len(df2_speed.max().index),
+             mode = 'lines',
+             line=dict(color=COLOR_CYAN, width=1.0),
+             visible = False,
+             hovertemplate='Mean: %{y} km/h',
+             showlegend = False),
+             row = 1, col = 2)
+
+        fig.add_trace(go.Scatter(
+             x = df2_speed.min().index,
+             y = [df2_speed.min().median().round(1)]*len(df2_speed.max().index),
+             mode = 'lines',
+             line=dict(color=COLOR_GREEN, width=1.0),
+             visible = False,
+             hovertemplate='Median: %{y} km/h',
+             showlegend = False),
+             row = 1, col = 2)
+        #endregion
+
+
+        fig.update_layout(
+            autosize=True,
+            height=height * 0.7,
+            separators=',.',
+            minreducedwidth = 400,
+            font_family = "'Roboto Condensed',sans-serif",
+            title_font_size = TITLE_SIZE,
+            font_color = COLOR_BLACK,
+            title = dict(x=0.5, xanchor = 'center', text='Lap Overview: Maximum Speed'),
+            legend_title_text='Stint',
+            hovermode='x',            
+            modebar_remove = ['resetScale'],
+            modebar_add = ['drawline', 'drawopenpath', 'drawcircle', 'drawrect', 'eraseshape'],         
+            margin = dict(t=140),
+            template = 'plotly_white')
+        
+        fig.update_xaxes(title_text='Lap', row=1, col=1)
+        fig.update_xaxes(title_text='Lap', row=1, col=2)
+        fig.update_xaxes(showline=True, linewidth=1, linecolor='black', row=1, col=1)
+        fig.update_xaxes(showline=True, linewidth=1, linecolor='black', row=1, col=2)
+        fig.update_yaxes(title_text='km/h', row=1, col=1)
+        fig.update_yaxes(showline=True, linewidth=1, linecolor='black', row=1, col=1)
+
+        #region BUTTONS and MENUE
+        button1 = dict(method='update', 
+               args=[{"visible": [True]*6 + [False]*6 + [False]*6},
+                     {'title.text': 'Lap Overview: Maximum Speed'}], 
+               label="Maximum Speed" )
+        button2 = dict(method='update', 
+               args=[{"visible": [False]*6 + [True]*6 + [False]*6},
+                     {'title.text': 'Lap Overview: Average Speed'}], 
+               label="Average Speed" )   
+        button3 = dict(method='update', 
+               args=[{"visible": [False]*6 + [False]*6 + [True]*6 },
+                     {'title.text': 'Lap Overview: Minimum Speed'}], 
+               label="Minimum Speed")
+
+        fig.update_layout(
+                 updatemenus =[dict(type='buttons',
+                                    direction='left',
+                                    buttons=[button1, button2, button3],
+                                    x=0.00,
+                                    xanchor="left",
+                                    y=1.25,
+                                    yanchor="top")])
+        #endregion
+
+        return fig
+
+
+    def get_speed_comparision(self, _window_width):
+
+        if _window_width > 1400:
+            height = 800
+        elif _window_width > 1200:
+            height = 700
+        elif _window_width > 992:
+            height = 600
+        elif _window_width > 768:
+            height = 500
+        elif _window_width > 576:
+            height = 400
+        else:
+            height = 300
         
         # Create 1000 datasets for LapDistancePercentage -> round on 1 decimal
         self.df1['LDP_round']=self.df1.LapDistPct.round(1)
@@ -378,24 +664,32 @@ class StintAnalyzer:
         data_slowest['x_value'] = data_slowest.index
         data_slowest['slowest_diff'] = data_slowest.slowest_val_1 - data_slowest.slowest_val_2
 
-        # Create Figure
+        track_points = TRACKDATA['barcelona_gp']
+        annotations_data = dict(zip(data_mean.x_value, data_mean.mean_val_1))
+
+        annotations = []
+        for key in track_points.keys():
+            annotations.append({'x': key, 'y':annotations_data[key], 'text':track_points[key],
+                       'align': 'center', 'font':{'family':"Roboto, sans-serif", 'size':ANNOTATION_FONT_SIZE},
+                       'xanchor': 'center', 'showarrow': False, 'yshift': ANNOTATION_Y_SHIFT})
+ 
+        # region CREATE FIGURE
         fig = make_subplots(
             rows = 2, cols=1,
             subplot_titles=['Total Speed + Speed Difference'],             
             row_heights=[0.8, 0.2],
             shared_xaxes=True,
-            vertical_spacing=0.05,
-            x_title='Lap Distance in Percentage',
-            y_title='km/h')
+            vertical_spacing=0.05)
+        # endregion
 
-        # ADD DATA FOR MEAN LAP
+        # region ADD DATA FOR MEAN LAP
         fig.add_trace(go.Scatter(
             x = data_mean.x_value, 
             y = data_mean.mean_val_1, 
             name = self.df1_name, 
             line=dict(color=COLOR_BLUE, width=1.2), 
             visible = True,
-            hovertemplate="Speed: %{y}km/h"),
+            hovertemplate="Speed: %{y} km/h"),
             row = 1, col = 1)
 
         fig.add_trace(go.Scatter(
@@ -404,7 +698,7 @@ class StintAnalyzer:
             name = self.df2_name, 
             line=dict(color=COLOR_RED, width=1.2), 
             visible = True,
-            hovertemplate="Speed: %{y}km/h"),
+            hovertemplate="Speed: %{y} km/h"),
             row = 1, col = 1)
 
         fig.add_trace(go.Scatter(
@@ -414,10 +708,11 @@ class StintAnalyzer:
             name = 'Diff',
             line=dict(color=COLOR_BLUE, width=1.2),
             visible = True,
-            hovertemplate="Diff: %{y}km/h"),
+            hovertemplate="Diff: %{y} km/h"),
             row = 2, col = 1)
+        # endregion
 
-        # ADD DATA FOR FASTEST LAP
+        # region ADD DATA FOR FASTEST LAP
         fig.add_trace(go.Scatter(
             x = data_fastest.x_value, 
             y = data_fastest.fastest_val_1, 
@@ -443,8 +738,9 @@ class StintAnalyzer:
             visible = False),
             row = 2, 
             col = 1)
+        # endregion
 
-        # ADD DATA FOR SLOWEST LAP
+        # region ADD DATA FOR SLOWEST LAP
         fig.add_trace(go.Scatter(
             x = data_slowest.x_value, 
             y = data_slowest.slowest_val_1, 
@@ -470,41 +766,60 @@ class StintAnalyzer:
             visible = False),
             row = 2, 
             col = 1)
+        # endregion
 
+        fig.update_xaxes(title_text='Lap Distance in Percentage', row=2, col=1)
+        fig.update_yaxes(title_text='km/h', row=1, col=1)
+        fig.update_yaxes(title_text='km/h', row=2, col=1)
+        fig.update_xaxes(showline=True, linewidth=1, linecolor='black', row=2, col=1)
+        fig.update_yaxes(showline=True, linewidth=1, linecolor='black', row=1, col=1)
+        fig.update_yaxes(showline=True, linewidth=1, linecolor='black', row=2, col=1)
 
         fig.update_layout(
+            autosize=True,
+            height=height,
+            separators=',.',
+            minreducedwidth = 400,
             font_family = "'Roboto Condensed',sans-serif",
             title_font_size = TITLE_SIZE,
             font_color = COLOR_BLACK,
             title = dict(x=0.5, xanchor = 'center', text='Speed Comparision: All Laps (mean)'),
             legend_title_text='Stint',
             hovermode='x',            
-            modebar_remove = [],# ['zoomIn', 'zoomOut', 'resetScale'],
-            modebar_add = [], #['drawline', 'drawopenpath', 'drawcircle', 'eraseshape'],         
-            height = 800,
-            width = 1400,
-            margin = dict(t=120),
-            template = 'plotly_white'
-            )
+            modebar_remove = ['resetScale'],
+            modebar_add = ['drawline', 'drawopenpath', 'drawcircle', 'drawrect', 'eraseshape'],         
+            margin = dict(t=140),
+            template = 'plotly_white',
+            annotations = annotations)
         
         fig.update_annotations(
-            font_size = SUBPLOTS_TITLE_SIZE)
-
+            visible = False)
 
         button1 = dict(method='update', 
-               args=[{"visible": [True, True, True, False, False, False, False, False, False] },{'title.text': 'Speed Comparision: All Laps (mean)'}], 
+               args=[{"visible": [True]*3 + [False]*6},
+                     {'title.text': 'Speed Comparision: All Laps (mean)'}], 
                label="All Laps (mean)" )
         button2 = dict(method='update', 
-               args=[{"visible": [False, False, False, True, True, True, False, False, False] },{'title.text': 'Speed Comparision: Fastest Lap'}], 
+               args=[{"visible": [False]*3 + [True]*3 + [False]*3 },
+                     {'title.text': 'Speed Comparision: Fastest Lap'}], 
                label="Fastest Lap" )   
         button3 = dict(method='update', 
-               args=[{"visible": [False, False, False, False, False, False, True, True, True] },{'title.text': 'Speed Comparision: Slowest Lap'}], 
+               args=[{"visible": [False]*6 + [True]*3 },
+                     {'title.text': 'Speed Comparision: Slowest Lap'}], 
                label="Slowest Lap" )
-                 
+        button4 = dict(label="Corner names ON",
+                       method='update',
+                       args=[{'annotations.visible': True},
+                             {'annotations': annotations}])
+        button5 = dict(label="Corner names OFF",
+                       method='update',
+                       args=[{'annotations.visible': False},
+                             {'annotations': []}])
+
         fig.update_layout(
                  updatemenus =[dict(type='buttons',
                                     direction='left',
-                                    buttons=[button1, button2, button3],
+                                    buttons=[button1, button2, button3, button4, button5],
                                     x=0.00,
                                     xanchor="left",
                                     y=1.10,
@@ -514,6 +829,217 @@ class StintAnalyzer:
 
         # return fig.show(config=config) # renderer = 'browser'
 
+
+    def get_speed_track_map(self, _window_width):
+
+        # region WIDTH
+        if _window_width > 1400:
+            height = 800
+        elif _window_width > 1200:
+            height = 700
+        elif _window_width > 992:
+            height = 600
+        elif _window_width > 768:
+            height = 500
+        elif _window_width > 576:
+            height = 400
+        else:
+            height = 300
+        # endregion
+
+        # region CREATE FIGURE
+        fig = make_subplots(
+            rows = 1, cols=2, 
+            shared_yaxes=True,
+            shared_xaxes=True,
+            horizontal_spacing=0.05,
+            subplot_titles=[self.df1_name, self.df2_name])
+        # endregion
+
+        # region ADD DATA FOR FASTEST LAP
+        data_fastest_lap_df1 = self.df1[self.df1.Lap == self.df1_fastest_lap]
+        fig.add_trace(go.Scatter(
+            x=data_fastest_lap_df1.Lon,
+            y=data_fastest_lap_df1.Lat,
+            mode='markers',
+            marker = dict(size=16, color=data_fastest_lap_df1.Speed, colorscale='YlOrRd', showscale=True),
+            name = '',
+            customdata=data_fastest_lap_df1.Speed.round(1),
+            # CHANGE FOR EVALUATE THE TRACK CORNERS
+            # customdata=data_fastest_lap_df1.LDP_round,
+            hovertemplate="Speed: %{customdata} km/h",
+            visible = True,
+            showlegend = False),
+            row=1, col=1)
+        
+        fig.add_trace(go.Scatter(
+            x=[data_fastest_lap_df1.iloc[0].Lon],
+            y=[data_fastest_lap_df1.iloc[0].Lat],
+            mode = 'markers',
+            marker = dict(size=20, color=COLOR_BLACK),
+            name = 'Start/Finish Line',
+            showlegend = True,
+            visible = True,
+            hovertemplate="Start/Finish Line"), 
+            row=1, col=1)
+        
+        fig.update_layout(legend=dict(
+            yanchor="top",
+            y=0.01,
+            xanchor="left",
+            x=0.99))
+        
+        data_fastest_lap_df2 = self.df2[self.df2.Lap == self.df2_fastest_lap]
+        fig.add_trace(go.Scatter(
+            x=data_fastest_lap_df2.Lon,
+            y=data_fastest_lap_df2.Lat,
+            mode='markers',
+            marker = dict(size=16, color=data_fastest_lap_df2.Speed, colorscale='YlOrRd',showscale=False),
+            visible = True,
+            name='',
+            customdata=data_fastest_lap_df2.Speed.round(1),
+            hovertemplate="Speed: %{customdata} km/h",
+            showlegend = False),
+            row=1, col=2)
+
+        fig.add_trace(go.Scatter(
+            x=[data_fastest_lap_df2.iloc[0].Lon],
+            y=[data_fastest_lap_df2.iloc[0].Lat],
+            mode = 'markers',
+            marker = dict(size=20, color=COLOR_BLACK),
+            name = 'Start/Finish Line',
+            showlegend = False,
+            visible = True,
+            hovertemplate="Start/Finish Line"), 
+            row=1, col=2)
+        # endregion
+      
+        # region ADD DATA FOR SLOWEST LAP
+        data_slowest_lap_df1 = self.df1[self.df1.Lap == self.df1_slowest_lap]
+        fig.add_trace(go.Scatter(
+            x=data_slowest_lap_df1.Lon,
+            y=data_slowest_lap_df1.Lat,
+            mode='markers',
+            marker = dict(size=16, color=data_slowest_lap_df1.Speed, colorscale='YlOrRd', showscale=True),
+            name = '',
+            customdata=data_slowest_lap_df1.Speed.round(1),
+            hovertemplate="Speed: %{customdata} km/h",
+            visible = False,
+            showlegend = False),
+            row=1, col=1)
+        
+        fig.add_trace(go.Scatter(
+            x=[data_slowest_lap_df1.iloc[0].Lon],
+            y=[data_slowest_lap_df1.iloc[0].Lat],
+            mode = 'markers',
+            marker = dict(size=20, color=COLOR_BLACK),
+            name = 'Start/Finish Line',
+            showlegend = True,
+            visible = False,
+            hovertemplate="Start/Finish Line"), 
+            row=1, col=1)
+
+        data_slowest_lap_df2 = self.df2[self.df2.Lap == self.df2_slowest_lap]
+        fig.add_trace(go.Scatter(
+            x=data_slowest_lap_df2.Lon,
+            y=data_slowest_lap_df2.Lat,
+            mode='markers',
+            marker = dict(size=16, color=data_slowest_lap_df2.Speed, colorscale='YlOrRd',showscale=False),
+            visible = False,
+            name='',
+            customdata=data_slowest_lap_df2.Speed.round(1),
+            hovertemplate="Speed: %{customdata} km/h",
+            showlegend = False),
+            row=1, col=2)
+
+        fig.add_trace(go.Scatter(
+            x=[data_slowest_lap_df2.iloc[0].Lon],
+            y=[data_slowest_lap_df2.iloc[0].Lat],
+            mode = 'markers',
+            marker = dict(size=20, color=COLOR_BLACK),
+            name = 'Start/Finish Line',
+            showlegend = False,
+            visible = True,
+            hovertemplate="Start/Finish Line"), 
+            row=1, col=2)
+
+        # endregion
+
+        # region UPDATE LAYOUT
+        fig.update_layout(
+            autosize = True,
+            height = height, 
+            font_family = "'Roboto Condensed',sans-serif",
+            title_font_size = TITLE_SIZE,
+            font_color = COLOR_BLACK,
+            title = dict(x=0.5, xanchor = 'center', text='Speed Map - Fastest Laps (' + str(self.df1_name) + ': Lap ' + str(self.df1_fastest_lap) + ' / ' + str(self.df2_name) + ': Lap ' + str(self.df2_fastest_lap)),
+            legend_title_text='Stint',
+            hovermode='closest',            
+            modebar_remove = ['resetScale'],
+            modebar_add = ['drawline', 'drawopenpath', 'drawcircle', 'drawrect', 'eraseshape'],         
+            margin = dict(t=140),
+            template = 'plotly_white',
+            xaxis=dict(scaleanchor='y', scaleratio=1.0), 
+            xaxis2=dict(scaleanchor='y2', scaleratio=1.0))
+
+        fig.update_yaxes(
+            visible = False,
+            row=1, col=1)
+
+        fig.update_yaxes(
+            visible = False,
+            row=1, col=2)
+
+        fig.update_xaxes(
+            visible = False)
+        # endregion
+
+        # region ANNOTATION UPDATE
+        track_points = TRACKDATA['barcelona_gp']
+        annotations = []
+        for key in track_points.keys():
+            x_value = self.df1[self.df1.LDP_round == key].iloc[0].Lon
+            y_value = self.df1[self.df1.LDP_round == key].iloc[0].Lat
+
+            annotations.append({'x':x_value, 'y':y_value, 'text':track_points[key],
+                       'align': 'center', 'font':{'family':"Roboto Condensed, sans-serif", 'size':ANNOTATION_FONT_SIZE},
+                       'xanchor': 'center', 'showarrow': False, 'yshift': 0, 'xshift': 0, 'xref': 'x1', 'yref': 'y1'})
+
+            annotations.append({'x': x_value, 'y':y_value, 'text':track_points[key],
+                       'align': 'center', 'font':{'family':"Roboto Condensed, sans-serif", 'size':ANNOTATION_FONT_SIZE},
+                       'xanchor': 'center', 'showarrow': False, 'yshift': 0, 'xshift': 0, 'xref': 'x2', 'yref': 'y2'})
+        # endregion
+
+        # region BUTTON
+        button1 = dict(method='update', 
+               args=[{"visible": [True]*4 + [False]*4 },
+                     {'title.text': 'Speed Map - Fastest Laps (' + str(self.df1_name) + ': Lap ' + str(self.df1_fastest_lap) + ' / ' + str(self.df2_name) + ': Lap ' + str(self.df2_fastest_lap) + ')'}], 
+               label="Fastest Lap" )   
+        button2 = dict(method='update', 
+               args=[{"visible": [False]*4 + [True]*4 },
+                     {'title.text': 'Speed Map - Slowest Laps (' + str(self.df1_name) + ': Lap '+ str(self.df1_slowest_lap) + ' / ' + str(self.df1_name) + ': Lap ' + str(self.df2_slowest_lap) + ')'}], 
+               label="Slowest Lap" )
+        
+        button3 = dict(label="Corner names ON",
+                       method='update',
+                       args=[{'annotations.visible': True},
+                             {'annotations': [fig.layout.annotations[0]]+ [fig.layout.annotations[1]] + annotations}])
+        button4 = dict(label="Corner names OFF",
+                       method='update',
+                       args=[{'annotations.visible': True},
+                             {'annotations': [fig.layout.annotations[0]]+ [fig.layout.annotations[1]]}])
+
+        fig.update_layout(
+                 updatemenus =[dict(type='buttons',
+                                    direction='left',
+                                    buttons=[button1, button2, button3, button4],
+                                    x=0.00,
+                                    xanchor="left",
+                                    y=1.10,
+                                    yanchor="top")])
+        # endregion
+
+        return fig
 
     def get_computer_performance_graph(self):
         fig, axes = plt.subplots(4, 2, figsize=(8,12), sharey='row')

@@ -91,3 +91,59 @@ hr {
 .import {
     display: none;
 }
+
+.output {
+    display: block;
+    width: 90%;
+    max-width: 2000px;
+    margin: auto;
+}
+
+
+
+/* very small 0px 
+@media (min-width: 0em) {
+    .output {
+        width: 100%;    }
+}
+
+
+
+/* small 576px 
+@media (min-width: 36em) {
+    .output {
+        width: 95%;
+    }
+}
+
+/* medium 768px 
+@media (min-width: 48em) {
+    .output {
+        width: 90%;
+    }
+
+}
+
+/* large 992px 
+@media (min-width: 62em) {
+    .output {
+        width: 85%;    
+    }
+
+}
+
+/* very large 1200px 
+@media (min-width: 75em) {
+    .output {
+        width: 80%;
+    }
+
+}
+
+/* very very large 1400px 
+@media (min-width: 87.5em) {
+    .output {
+        max-width: 2400px;
+        width: 75%;
+    }
+} */
