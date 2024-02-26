@@ -169,6 +169,16 @@ def how_to(e):
     display(sta.get_speed_per_lap(window.innerWidth), target=OUTPUT_ID, append=False)
     display(sta.get_speed_comparision(window.innerWidth), target=OUTPUT_ID, append=True)
     display(sta.get_speed_track_map(window.innerWidth), target=OUTPUT_ID, append=True)
+    
+    figures = sta.get_constancy_comparision(window.innerWidth)
+    
+       
+    display(figures[0], target=OUTPUT_ID, append=True)
+    display(figures[1], target=OUTPUT_ID, append=True)
+
+
+
+
 
 def import_stint(e):
     hide_output()

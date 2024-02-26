@@ -1041,6 +1041,193 @@ class StintAnalyzer:
 
         return fig
 
+
+    def get_constancy_comparision(self, _window_width):
+
+        # region WIDTH
+        if _window_width > 1400:
+            height = 800
+        elif _window_width > 1200:
+            height = 700
+        elif _window_width > 992:
+            height = 600
+        elif _window_width > 768:
+            height = 500
+        elif _window_width > 576:
+            height = 400
+        else:
+            height = 300
+        # endregion
+
+        # Create 1000 datasets for LapDistancePercentage -> round on 1 decimal
+        self.df1['LDP_round']=self.df1.LapDistPct.round(1)
+        self.df2['LDP_round']=self.df2.LapDistPct.round(1)
+
+        # region CREATE FIGURE
+        fig = go.Figure(
+            layout=go.Layout(
+                title=go.layout.Title(text='Speed Constancy Comparision'),
+                height = height * 0.5))
+        # endregion
+
+        max_value_1 = self.df1.groupby('LDP_round').Speed.max()
+        mean_value_1 = self.df1.groupby('LDP_round').Speed.mean()
+        min_value_1 = self.df1.groupby('LDP_round').Speed.min()
+        std_value_1 = self.df1.groupby('LDP_round').Speed.var()
+        lon_value_1 = self.df1.groupby('LDP_round').Lon.max()
+        lat_value_1 = self.df1.groupby('LDP_round').Lat.max()
+        index_1 = max_value_1.index
+
+        max_value_2 = self.df2.groupby('LDP_round').Speed.max()
+        mean_value_2 = self.df2.groupby('LDP_round').Speed.mean()
+        min_value_2 = self.df2.groupby('LDP_round').Speed.min()
+        std_value_2 = self.df2.groupby('LDP_round').Speed.var()
+        lon_value_2 = self.df2.groupby('LDP_round').Lon.max()
+        lat_value_2 = self.df2.groupby('LDP_round').Lat.max()
+
+        new_data = pd.DataFrame(data={'max_val_1': max_value_1, 'mean_val_1': mean_value_1, 'min_val_1': min_value_1, 'std_val_1': std_value_1, 'lon_val_1': lon_value_1, 'lat_val_1': lat_value_1, 'max_val_2': max_value_2, 'mean_val_2': mean_value_2, 'min_val_2': min_value_2, 'std_val_2': std_value_2, 'lon_val_2': lon_value_2, 'lat_val_2': lat_value_2, }, index = index_1)
+
+        new_data['x_value'] = new_data.index
+        new_data['var_coeff_1'] = new_data.std_val_1 / new_data.mean_val_1
+        new_data['var_coeff_2'] = new_data.std_val_2 / new_data.mean_val_2
+        new_data['mean_diff'] = new_data.mean_val_1 - new_data.mean_val_2
+
+        
+        fig.add_trace(go.Scatter(
+            x = new_data.x_value,
+            y = new_data.var_coeff_1.round(2),
+            fill = 'tozeroy',
+            fillcolor='rgba(30, 68, 136, 0.1)',
+            name = self.df1_name,
+            line=dict(color=COLOR_BLUE, width=0.5),
+            visible = True,
+            hovertemplate="variance %{y}"))
+        
+        fig.add_trace(go.Scatter(
+            x = new_data.x_value,
+            y = new_data.var_coeff_2.round(2),
+            fill = 'tozeroy',
+            fillcolor='rgba(253, 40, 38, 0.1)',
+            name = self.df2_name,
+            line=dict(color=COLOR_RED, width=0.5),
+            visible = True,
+            hovertemplate="variance %{y}"))
+        
+        fig.add_trace(go.Scatter(
+            x = new_data.x_value,
+            y = [new_data.var_coeff_1.mean()] * len(new_data.x_value),
+            name = 'Mean ' + self.df1_name,
+            line=dict(color=COLOR_BLUE, width=0.5),
+            visible = True,
+            hovertemplate=""))
+
+        fig.add_trace(go.Scatter(
+            x = new_data.x_value,
+            y = [new_data.var_coeff_2.mean()] * len(new_data.x_value),
+            name = 'Mean ' + self.df2_name,
+            line=dict(color=COLOR_RED, width=0.5),
+            visible = True,
+            hovertemplate=""))
+
+      
+        fig.update_xaxes(title_text='Lap Distance in Percentage')
+        fig.update_yaxes(title_text='Variance')
+
+        fig.update_layout(
+            autosize=True,
+            separators=',.',
+            minreducedwidth = 400,
+            font_family = "'Roboto Condensed',sans-serif",
+            title_font_size = TITLE_SIZE,
+            font_color = COLOR_BLACK,
+            title = dict(x=0.5, xanchor = 'center'),
+            legend_title_text='Stint',
+            hovermode='x',            
+            modebar_remove = ['resetScale'],
+            modebar_add = ['drawline', 'drawopenpath', 'drawcircle', 'drawrect', 'eraseshape'],         
+            margin = dict(t=140),
+            template = 'plotly_white')
+
+
+        # region CREATE TRACKMAP
+        fig2 = make_subplots(
+            rows = 1, cols=2, 
+            shared_yaxes=True,
+            shared_xaxes=True,
+            horizontal_spacing=0.05,
+            subplot_titles=[self.df1_name, self.df2_name])
+        # endregion
+
+        # region ADD DATA
+        fig2.add_trace(go.Scatter(
+            x=new_data.lon_val_1,
+            y=new_data.lat_val_1,
+            mode='markers',
+            marker = dict(size=16, color=new_data.var_coeff_1, colorscale='Aggrnyl', showscale=True),
+            name = '',
+            customdata=new_data.var_coeff_1.round(2),
+            # CHANGE FOR EVALUATE THE TRACK CORNERS
+            # customdata=data_fastest_lap_df1.LDP_round,
+            hovertemplate="Variance: %{customdata}",
+            visible = True,
+            showlegend = False),
+            row=1, col=1)
+
+        fig2.add_trace(go.Scatter(
+            x=new_data.lon_val_2,
+            y=new_data.lat_val_2,
+            mode='markers',
+            marker = dict(size=16, color=new_data.var_coeff_2, colorscale='Aggrnyl', showscale=False),
+            name = '',
+            customdata=new_data.var_coeff_2.round(2),
+            # CHANGE FOR EVALUATE THE TRACK CORNERS
+            # customdata=data_fastest_lap_df1.LDP_round,
+            hovertemplate="Variance: %{customdata}",
+            visible = True,
+            showlegend = False),
+            row=1, col=2)
+
+
+        
+        fig2.update_layout(legend=dict(
+            yanchor="top",
+            y=0.01,
+            xanchor="left",
+            x=0.99))
+
+        fig2.update_layout(
+            autosize = True,
+            height = height, 
+            font_family = "'Roboto Condensed',sans-serif",
+            title_font_size = TITLE_SIZE,
+            font_color = COLOR_BLACK,
+            title = dict(x=0.5, xanchor = 'center', text='Speed Constanciy Map'),
+            legend_title_text='Stint',
+            hovermode='closest',            
+            modebar_remove = ['resetScale'],
+            modebar_add = ['drawline', 'drawopenpath', 'drawcircle', 'drawrect', 'eraseshape'],         
+            margin = dict(t=140),
+            template = 'plotly_white',
+            xaxis=dict(scaleanchor='y', scaleratio=1.0), 
+            xaxis2=dict(scaleanchor='y2', scaleratio=1.0))
+
+        fig2.update_yaxes(
+            visible = False,
+            row=1, col=1)
+
+        fig2.update_yaxes(
+            visible = False,
+            row=1, col=2)
+
+        fig2.update_xaxes(
+            visible = False)
+        # endregion
+
+
+        
+        return (fig, fig2)
+
+
     def get_computer_performance_graph(self):
         fig, axes = plt.subplots(4, 2, figsize=(8,12), sharey='row')
         fig.suptitle('Computer Performance', fontsize=14, fontweight=600)
