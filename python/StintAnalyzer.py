@@ -1,65 +1,43 @@
+# region ---- IMPORTS ----
 import pandas as pd
+# TODO delete after replacement of matplotlib
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
-
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
 import time
-
-config = dict(displaylogo=False, scrollZoom=True, modeBarButtonsToRemove=['zoomIn', 'zoomOut', 'resetScale'], modeBarButtonsToAdd=['drawline', 'drawopenpath', 'drawcircle', 'eraseshape'])
-
-COLOR_RED = '#FD2826'
-COLOR_BLUE = '#1E4488'
-COLOR_ORANGE = '#FF6600'
-COLOR_YELLOW = '#FFCC00'
-COLOR_GREEN = '#33CC00'
-COLOR_CYAN = '#00CCCC'
-COLOR_GREY = '#676767'
-COLOR_BLACK = '#000000'
-
-BASE_FONT_SIZE = 15
-TITLE_SIZE = BASE_FONT_SIZE * 1.5
-SUBPLOTS_TITLE_SIZE = BASE_FONT_SIZE * 1.1
-ANNOTATION_FONT_SIZE = BASE_FONT_SIZE * 0.8
-XAXIS_TITLE_SIZE = 14
-XAXIS_TICK_SIZE = 12
-YAXIS_TITLE_SIZE = 14
-YAXIS_TICK_SIZE = 12
-
-ANNOTATION_Y_SHIFT = -50
-
-TRACKDATA = {'barcelona_gp': {19.0:'T1', 21.0: 'T2', 26.6: 'T3', 39.0: 'Rapsol<br>T4', 46.8: 'T5', 51.7: 'T6', 56.0: 'TV3<br>T7', 60.0: 'T8',
-                              63.3: 'T9', 76.0: 'T10', 78.6: 'T11', 81.4: 'T12', 87.1: 'Europcar<br>T13', 89.7: 'RACC<br>T14', 91.2: 'T15', 94.1: 'Catalunya<br>T16'}}
+# Track Data for naming of the turns
+from TrackData import TRACKDATA
+# General Constants
+from Params import *
+# Config Parameters for Plotly
+from PlotlyConfig import *
+# endregion
 
 class StintAnalyzer:
 
+    def __init__(self) -> None:
 
-    def __init__(self, df1_path : str = None, df2_path : str = None, df1_name : str = 'Stint 1', df2_name : str = 'Stint 2', df1_skip_laps : list =[], df2_skip_laps : list=[]) -> None:
-        
-        if df1_path:
-            self.df1 : pd.DataFrame = pd.read_csv(df1_path)
-            self.df1_name : str = df1_name
+        # DataFrames for the datasets / use load_df1 and load_df2 to implement    
+        self.df1 : pd.DataFrame
+        self.df2 : pd.DataFrame
 
-        if df2_path:
-            self.df2 : pd.DataFrame = pd.read_csv(df2_path)
-            self.df2_name : str = df2_name
-        else:
-            if df1_path:
-                self.df2 : pd.DataFrame = self.df1.copy(deep=True)
-                self.df2_name : str = self.df1_name + '(Copy)'
+        self.df1_name : str
+        self.df2_name : str
+        self.df1_skip_laps : list = []
+        self.df2_skip_laps : list = []
 
-        self.df1_skip_laps = df1_skip_laps
-        self.df2_skip_laps = df2_skip_laps
+        # lap number of the fastest / slowest lap of a stint
         self.df1_fastest_lap : int
         self.df1_slowest_lap : int
         self.df2_fastest_lap : int
         self.df2_slowest_lap : int
 
-        if df1_path:
-            self.setup_stintanalyzer()
- 
+        # dict for the storage of the static session data         
+        self.sessiondata_df1 : dict = dict()
+        self.sessiondata_df2 : dict = dict()
+
 
     def load_df1(self, buffer):
         self.df1=pd.read_csv(buffer)
@@ -69,58 +47,89 @@ class StintAnalyzer:
     def load_df2(self, buffer):
         self.df2=pd.read_csv(buffer)
         self.df2_name = 'Stint 2'
-        self.setup_stintanalyzer()
 
 
     def setup_stintanalyzer(self):
 
+        # TODO delete after replacement of matplotlib
         self._set_matplotlib_params()
+        
+        # save the session data in the dicts [self.sessiondata_df1] and [self.sessiondata_df2]
+        self._set_session_data()
+
+        # create column [LapActualTime] in df1 and df2 with the laptime of the current lap
         self._set_actual_lap_time()
-        self.delete_laps_df1(self.df1_skip_laps)
-        self.delete_laps_df2(self.df2_skip_laps)
 
-
-    def _set_actual_lap_time(self):
-
-        time_data_df1 = self.df1.groupby('Lap')['LapLastLapTime'].value_counts()
-        time_dict_df1={}
-        final_dict_df1={}
-        for index in range(time_data_df1.index.get_level_values(0).min(), time_data_df1.index.get_level_values(0).max()+1):
-            time_dict_df1[index] = time_data_df1[index].to_dict()
-        for key in time_dict_df1.keys():
-            final_dict_df1[key - 1] = max(time_dict_df1[key], key=time_dict_df1[key].get)
-        # Delete in-/out-lap        
-        self.df1.drop(self.df1[self.df1.Lap == self.df1.Lap.min()].index, inplace = True)
-        self.df1.drop(self.df1[self.df1.Lap == self.df1.Lap.max()].index, inplace = True)
-        self.df1['LapActualTime'] = self.df1['Lap'].apply(lambda lap: final_dict_df1[lap])
-      
-        time_data_df2 = self.df2.groupby('Lap')['LapLastLapTime'].value_counts()
-        time_dict_df2={}
-        final_dict_df2={}
-        for index in range(time_data_df2.index.get_level_values(0).min(), time_data_df2.index.get_level_values(0).max()+1):
-            time_dict_df2[index] = time_data_df2[index].to_dict()
-        for key in time_dict_df2.keys():
-            final_dict_df2[key - 1] = max(time_dict_df2[key], key=time_dict_df2[key].get)
-        # Delete in-/out-lap        
-        self.df2.drop(self.df2[self.df2.Lap == self.df2.Lap.min()].index, inplace = True)
-        self.df2.drop(self.df2[self.df2.Lap == self.df2.Lap.max()].index, inplace = True)
-        self.df2['LapActualTime'] = self.df2['Lap'].apply(lambda lap: final_dict_df2[lap])
-
+        # update the value for self.dfx_fastest_lap and self.dfx_slowest_lap
         self._update_fastest_and_slowest_lap()
 
 
+    def _set_session_data(self):
+        # saves the session data in the dicts self.sessiondata_df1 and self.sessiondata_df2
+        sessiondata_keys_df1 = self.df1.SessionData[0].split('*')
+        sessiondata_keys_df2 = self.df2.SessionData[0].split('*')
+        sessiondata_values_df1 = self.df1.SessionData[1].split('*')
+        sessiondata_values_df2 = self.df2.SessionData[1].split('*')
+
+        for index in range(len(sessiondata_keys_df1)):
+            self.sessiondata_df1[sessiondata_keys_df1[index]] = sessiondata_values_df1[index]
+
+        for index in range(len(sessiondata_keys_df2)):
+            self.sessiondata_df2[sessiondata_keys_df2[index]] = sessiondata_values_df2[index]
+
+
+    def _set_actual_lap_time(self):
+        # create column [LapActualTime] in df1 and df2 with the laptime of the current lap
+        # different values for "LastLapTime" are displayed for each lap. The value with the most entries is the correct one.
+        time_data_df1 = self.df1.groupby('Lap')['LapLastLapTime'].value_counts()
+        time_data_df2 = self.df2.groupby('Lap')['LapLastLapTime'].value_counts()
+
+        # saves the correct lap times, but still assigned to the wrong laps        
+        time_dict_df1={}
+        time_dict_df2={}
+
+        # correct assignment of lap times to the laps        
+        final_dict_df1={}
+        final_dict_df2={}
+
+        # creates a dictionary from the value_counts overview
+        for index in range(time_data_df1.index.get_level_values(0).min(), time_data_df1.index.get_level_values(0).max()+1):
+            time_dict_df1[index] = time_data_df1[index].to_dict()
+        for index in range(time_data_df2.index.get_level_values(0).min(), time_data_df2.index.get_level_values(0).max()+1):
+            time_dict_df2[index] = time_data_df2[index].to_dict()
+
+        # selects the lap time with the most entries
+        for key in time_dict_df1.keys():
+            final_dict_df1[key - 1] = max(time_dict_df1[key], key=time_dict_df1[key].get)
+        for key in time_dict_df2.keys():
+            final_dict_df2[key - 1] = max(time_dict_df2[key], key=time_dict_df2[key].get)
+
+        # delete in-/out-lap in the DataFrame, because there is no valid data        
+        self.df1.drop(self.df1[self.df1.Lap == self.df1.Lap.min()].index, inplace = True)
+        self.df1.drop(self.df1[self.df1.Lap == self.df1.Lap.max()].index, inplace = True)
+        self.df2.drop(self.df2[self.df2.Lap == self.df2.Lap.min()].index, inplace = True)
+        self.df2.drop(self.df2[self.df2.Lap == self.df2.Lap.max()].index, inplace = True)
+
+        # assign the laptime to each row
+        self.df1['LapActualTime'] = self.df1.Lap.apply(lambda lap: final_dict_df1[lap])
+        self.df2['LapActualTime'] = self.df2.Lap.apply(lambda lap: final_dict_df2[lap])
+
+
     def _update_fastest_and_slowest_lap(self):
+        # update the value for self.dfx_fastest_lap and self.dfx_slowest_lap
         self.df1_fastest_lap = self.df1.groupby('Lap').LapActualTime.max().idxmin() 
         self.df2_fastest_lap = self.df2.groupby('Lap').LapActualTime.max().idxmin()
         self.df1_slowest_lap = self.df1.groupby('Lap').LapActualTime.max().idxmax()
         self.df2_slowest_lap = self.df2.groupby('Lap').LapActualTime.max().idxmax()
 
 
+    # TODO delete after replacement of matplotlib
     def _set_matplotlib_params(self):
         plt.rcParams['font.family'] = ['Roboto', 'Arial', 'sans-serif']
 
 
     def _convert_in_min(self, seconds : float) -> str:
+        # converts the laptime in seconds (float) to a string(mm:ss:msmsms)
         value = int(seconds*1000%1000)
         if value == 0:
             ms = '000'
@@ -136,14 +145,12 @@ class StintAnalyzer:
     def delete_laps_df1(self, laps : list) -> None:
         for lap in laps:
             self.df1.drop(self.df1[self.df1.Lap == int(lap)].index, inplace=True)
-
         self._update_fastest_and_slowest_lap()    
 
 
     def delete_laps_df2(self, laps: list) -> None:
         for lap in laps:
             self.df2.drop(self.df2[self.df2.Lap == int(lap)].index, inplace=True)
-
         self._update_fastest_and_slowest_lap()
 
 
@@ -154,6 +161,10 @@ class StintAnalyzer:
             data = self.df2.groupby('Lap').LapActualTime.max().to_frame()
         data.columns=['Laptime']
         return data.Laptime.apply(self._convert_in_min).to_frame()
+
+
+    def get_sessiondata(self) -> tuple:
+        return (self.sessiondata_df1, self.sessiondata_df2)        
 
 
     def get_laptime_graph(self):
@@ -190,166 +201,6 @@ class StintAnalyzer:
         axes[0].yaxis.set_major_formatter(formatter)
 
         axes[0].legend(frameon = False)
-        plt.tight_layout()
-        return fig
-
-
-    def get_speed_graph(self):
-
-        fig, axes = plt.subplot_mosaic([['max1', 'max2'],
-                                        ['avg1', 'avg2'],
-                                        ['min1', 'min2'],
-                                        ['map1', 'map2'],
-                                        ['comp_fastest', 'comp_fastest'],
-                                        ['diff', 'diff'],
-                                        ['comp_mean', 'comp_mean'],
-                                        ['diff_mean', 'diff_mean'],
-                                        ['const_speed', 'const_speed'],
-                                        ['const_map_1', 'const_map_2']],
-                                        figsize=(12, 38),
-                                        gridspec_kw={'height_ratios': [1, 1, 1, 1.5, 1.5, 0.5, 1.5, 0.5, 0.5, 1.5]})
-
-        axes['max1'].sharey(axes['max2'])        
-        axes['avg1'].sharey(axes['avg2'])        
-        axes['min1'].sharey(axes['min2'])        
-        axes['map1'].sharey(axes['map2'])
-
-        fig.suptitle('Speed Overview', fontsize=14, fontweight=600)
-
-        df1_speed = self.df1.groupby(by='Lap').Speed
-        df2_speed = self.df2.groupby(by='Lap').Speed
-
-        axes['max1'].set_title('Max. Speed ' + self.df1_name, fontsize=10, fontweight=300)
-        axes['max2'].set_title('Max Speed' + self.df2_name, fontsize=10, fontweight=300)
-        df1_speed.max().plot(ax=axes['max1'], drawstyle='steps-mid')
-        df2_speed.max().plot(ax=axes['max2'], drawstyle='steps-mid', label='')
-        axes['max1'].plot(df1_speed.max().index, [df1_speed.max().mean()] * len(df1_speed.max().index), label='mean')
-        axes['max1'].plot(df1_speed.max().index, [df1_speed.max().median()] * len(df1_speed.max().index), label='median')
-        axes['max2'].plot(df2_speed.max().index, [df2_speed.max().mean()] * len(df2_speed.max().index), label='')
-        axes['max2'].plot(df2_speed.max().index, [df2_speed.max().median()] * len(df2_speed.max().index), label='')
-        axes['max1'].legend(frameon = False)
-        axes['max1'].set_ylabel('Speed in km/h', fontsize=9)
-
-        axes['avg1'].set_title('Avg. Speed ' + self.df1_name, fontsize=10, fontweight=300)
-        axes['avg2'].set_title('Avg. Speed' + self.df2_name, fontsize=10, fontweight=300)
-        df1_speed.mean().plot(ax=axes['avg1'], drawstyle='steps-mid')
-        df2_speed.mean().plot(ax=axes['avg2'], drawstyle='steps-mid', label='')
-        axes['avg1'].plot(df1_speed.mean().index, [df1_speed.mean().mean()] * len(df1_speed.mean().index), label='mean')
-        axes['avg1'].plot(df1_speed.mean().index, [df1_speed.mean().median()] * len(df1_speed.mean().index), label='median')
-        axes['avg2'].plot(df2_speed.mean().index, [df2_speed.mean().mean()] * len(df2_speed.mean().index), label='')
-        axes['avg2'].plot(df2_speed.mean().index, [df2_speed.mean().median()] * len(df2_speed.mean().index), label='')
-        axes['avg1'].legend(frameon = False)
-        axes['avg1'].set_ylabel('Speed in km/h', fontsize=9)
-
-        axes['min1'].set_title('Min. Speed ' + self.df1_name, fontsize=10, fontweight=300)
-        axes['min2'].set_title('Min. Speed' + self.df2_name, fontsize=10, fontweight=300)
-        df1_speed.min().plot(ax=axes['min1'], drawstyle='steps-mid')
-        df2_speed.min().plot(ax=axes['min2'], drawstyle='steps-mid', label='')
-        axes['min1'].plot(df1_speed.min().index, [df1_speed.min().mean()] * len(df1_speed.min().index), label='mean')
-        axes['min1'].plot(df1_speed.min().index, [df1_speed.min().median()] * len(df1_speed.min().index), label='median')
-        axes['min2'].plot(df2_speed.min().index, [df2_speed.min().mean()] * len(df2_speed.min().index), label='')
-        axes['min2'].plot(df2_speed.min().index, [df2_speed.min().median()] * len(df2_speed.min().index), label='')
-        axes['min1'].legend(frameon = False)
-        axes['min1'].set_ylabel('Speed in km/h', fontsize=9)
-
-        fastest_lap_df1 = self.df1.groupby('Lap').LapActualTime.max().idxmin()
-        fastest_lap_df2 = self.df2.groupby('Lap').LapActualTime.max().idxmin()
-        axes['map1'].set_title(self.df1_name + ": Speed during fastest lap " + str(fastest_lap_df1), fontsize=12, fontweight=400)
-        axes['map2'].set_title(self.df2_name + ": Speed during fastest lap " + str(fastest_lap_df2), fontsize=12, fontweight=400)
-        self.df1[self.df1.Lap == fastest_lap_df1].plot(ax=axes['map1'], kind='scatter', x='Lat', y='Lon', s=50, c='Speed', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
-        self.df2[self.df2.Lap == fastest_lap_df2].plot(ax=axes['map2'], kind='scatter', x='Lat', y='Lon', s=50, c='Speed', cmap=mpl.colors.LinearSegmentedColormap.from_list("", ['maroon','brown', 'orange', 'yellow']))
-        axes['map1'].plot(self.df1.iloc[0]['Lat'], self.df1.iloc[0]['Lon'], "ro", label='start/finish line', ms=8)
-        axes['map2'].plot(self.df2.iloc[0]['Lat'], self.df2.iloc[0]['Lon'], "ro", label='start/finish line', ms=8)
-        for axe in [axes['map1'], axes['map2']]:
-            for value in 'top right left bottom'.split():
-                axe.spines[value].set_visible(False)
-            axe.set_xlabel('')
-            axe.set_ylabel('')
-        axes['map1'].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
-        axes['map2'].tick_params(left = False, right = False, labelleft = False, labelbottom = False, bottom = False)
-        axes['map1'].legend(frameon=False)
-        axes['map2'].legend(frameon=False)
-
-        df_fastest_lap_1 = self.df1[self.df1.Lap == self.df1_fastest_lap].copy()
-        df_fastest_lap_2 = self.df2[self.df2.Lap == self.df2_fastest_lap].copy()
-
-        axes['comp_fastest'].set_title('Speed Comparison fastest laps', fontsize=12, fontweight=400)
-        df_fastest_lap_1.plot(x='LapDistPct', y='Speed', ax=axes['comp_fastest'], label=self.df1_name + " Lap " + str(self.df1_fastest_lap), linewidth=1)
-        df_fastest_lap_2.plot(x='LapDistPct', y='Speed', ax=axes['comp_fastest'], label=self.df2_name + " Lap " + str(self.df2_fastest_lap), linewidth=1)
-        axes['comp_fastest'].set_ylabel('Speed in km/h', fontsize=9)
-        axes['comp_fastest'].set_xlabel('Lap Distance in %', fontsize=9)
-        axes['comp_fastest'].legend(frameon=False)
-
-        # Difference Speed Comparison fastest laps
-
-        df_fastest_lap_1['LDP_round'] = df_fastest_lap_1.LapDistPct.round(1)
-        df_fastest_lap_2['LDP_round'] = df_fastest_lap_2.LapDistPct.round(1)
-        fastest_mean_value_1 = df_fastest_lap_1.groupby('LDP_round').Speed.mean()
-        fastest_mean_value_2 = df_fastest_lap_2.groupby('LDP_round').Speed.mean()
-        fastest_index = fastest_mean_value_1.index
-
-        fastest_new_data = pd.DataFrame(data={'mean_val_1': fastest_mean_value_1, 'mean_val_2': fastest_mean_value_2}, index = fastest_index)
-        fastest_new_data['x_value'] = fastest_new_data.index
-        fastest_new_data['fastest_diff'] = fastest_new_data.mean_val_1 - fastest_new_data.mean_val_2
-        fastest_new_data.fastest_diff.plot(kind='line', alpha=1, ax=axes['diff'])
-        max_y = fastest_new_data.fastest_diff.max()
-        min_y = fastest_new_data.fastest_diff.min()
-        if abs(max_y) > abs(min_y):
-            axes['diff'].set_ylim(max_y * -1, max_y)
-        elif abs(max_y) <= abs(min_y):
-            axes['diff'].set_ylim(min_y, abs(min_y))
-        axes['diff'].plot(fastest_index, [0]*len(fastest_index), lw=0.5, color = 'black')
-
-
-        # Speed Comparison mean lap
-
-        self.df1['LDP_round']=self.df1.LapDistPct.round(1)
-        self.df2['LDP_round']=self.df2.LapDistPct.round(1)
-
-        max_value_1 = self.df1.groupby('LDP_round').Speed.max()
-        mean_value_1 = self.df1.groupby('LDP_round').Speed.mean()
-        min_value_1 = self.df1.groupby('LDP_round').Speed.min()
-        std_value_1 = self.df1.groupby('LDP_round').Speed.var()
-        lon_value_1 = self.df1.groupby('LDP_round').Lon.max()
-        lat_value_1 = self.df1.groupby('LDP_round').Lat.max()
-        index_1 = max_value_1.index
-
-        max_value_2 = self.df2.groupby('LDP_round').Speed.max()
-        mean_value_2 = self.df2.groupby('LDP_round').Speed.mean()
-        min_value_2 = self.df2.groupby('LDP_round').Speed.min()
-        std_value_2 = self.df2.groupby('LDP_round').Speed.var()
-        lon_value_2 = self.df2.groupby('LDP_round').Lon.max()
-        lat_value_2 = self.df2.groupby('LDP_round').Lat.max()
-
-        new_data = pd.DataFrame(data={'max_val_1': max_value_1, 'mean_val_1': mean_value_1, 'min_val_1': min_value_1, 'std_val_1': std_value_1, 'lon_val_1': lon_value_1, 'lat_val_1': lat_value_1, 'max_val_2': max_value_2, 'mean_val_2': mean_value_2, 'min_val_2': min_value_2, 'std_val_2': std_value_2, 'lon_val_2': lon_value_2, 'lat_val_2': lat_value_2, }, index = index_1)
-
-        new_data['x_value'] = new_data.index
-        new_data['var_coeff_1'] = new_data.std_val_1 / new_data.mean_val_1
-        new_data['var_coeff_2'] = new_data.std_val_2 / new_data.mean_val_2
-        new_data['mean_diff'] = new_data.mean_val_1 - new_data.mean_val_2
-
-
-        new_data.mean_val_1.plot(ax=axes['comp_mean'])
-        new_data.mean_val_2.plot(ax=axes['comp_mean'])
-        new_data.var_coeff_1.plot(kind='area', alpha=0.15, ax=axes['const_speed'])
-        new_data.var_coeff_2.plot(kind='area', alpha=0.15, ax=axes['const_speed'])
-
-        new_data.mean_diff.plot(kind='line', ax=axes['diff_mean'])
-        max_y = new_data.mean_diff.max()
-        min_y = new_data.mean_diff.min()
-        if abs(max_y) > abs(min_y):
-            axes['diff_mean'].set_ylim(max_y * -1, max_y)
-        elif abs(max_y) <= abs(min_y):
-            axes['diff_mean'].set_ylim(min_y, abs(min_y))
-        axes['diff_mean'].plot(index_1, [0]*len(index_1), lw=0.5, color = 'black')
-
-        axes['const_speed'].plot(index_1, [new_data.var_coeff_1.mean()]*len(index_1), lw=0.5)
-        axes['const_speed'].plot(index_1, [new_data.var_coeff_2.mean()]*len(index_1), lw=0.5)
-
-        # Consistency Map 
-        new_data.plot(kind='scatter', y='lon_val_1', x='lat_val_1', s=80, c='var_coeff_1', ax=axes['const_map_1'])
-        new_data.plot(kind='scatter', y='lon_val_2', x='lat_val_2', s=80, c='var_coeff_2', ax=axes['const_map_2'])
-
         plt.tight_layout()
         return fig
 
@@ -664,7 +515,7 @@ class StintAnalyzer:
         data_slowest['x_value'] = data_slowest.index
         data_slowest['slowest_diff'] = data_slowest.slowest_val_1 - data_slowest.slowest_val_2
 
-        track_points = TRACKDATA['barcelona_gp']
+        track_points = TRACKDATA['roadatlanta full']
         annotations_data = dict(zip(data_mean.x_value, data_mean.mean_val_1))
 
         annotations = []
@@ -972,7 +823,7 @@ class StintAnalyzer:
             font_family = "'Roboto Condensed',sans-serif",
             title_font_size = TITLE_SIZE,
             font_color = COLOR_BLACK,
-            title = dict(x=0.5, xanchor = 'center', text='Speed Map - Fastest Laps (' + str(self.df1_name) + ': Lap ' + str(self.df1_fastest_lap) + ' / ' + str(self.df2_name) + ': Lap ' + str(self.df2_fastest_lap)),
+            title = dict(x=0.5, xanchor = 'center', text='Speed Map - Fastest Laps (' + str(self.df1_name) + ': Lap ' + str(self.df1_fastest_lap) + ' / ' + str(self.df2_name) + ': Lap ' + str(self.df2_fastest_lap) + ')'),
             legend_title_text='Stint',
             hovermode='closest',            
             modebar_remove = ['resetScale'],
@@ -995,7 +846,7 @@ class StintAnalyzer:
         # endregion
 
         # region ANNOTATION UPDATE
-        track_points = TRACKDATA['barcelona_gp']
+        track_points = TRACKDATA['roadatlanta full']
         annotations = []
         for key in track_points.keys():
             x_value = self.df1[self.df1.LDP_round == key].iloc[0].Lon
@@ -1688,4 +1539,3 @@ class StintAnalyzer:
 
         plt.tight_layout()
         return fig
-

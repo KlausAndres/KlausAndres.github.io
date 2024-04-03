@@ -10,10 +10,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,400;0,600;1,600&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="/styles/main.css" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./ass/favicon.png">
+
+    <link rel="stylesheet" href="/styles/main.css"/>
 
     <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <title>iRacing Stint Analyzer</title>
 
@@ -57,20 +60,20 @@
         <hr>
 
         <div class="import" id="import">
-            <button class="button" type="button" id="load_demo_data" py-click="load_demo_data">LOAD DEMO DATA</button>
+            <button class="button" type="button" id="analyze_demo_data" py-click="analyze_demo_data" style="display: block; margin-bottom: 30px;">ANALYZE DEMO DATA</button>
 
             <ol>
                 <li>
-                    <label for="Upload">Stint File Upload:</label>
+                    <label for="upload_1">Stint File Upload:</label>
                     <input type="file" name="upload_1" id="upload_1">
                 </li>
-                <li>
-                    <label for="Upload">Stint File Upload:</label>
+                <li style="margin-top: 15px;">
+                    <label for="upload_2">Stint File Upload:</label>
                     <input type="file" name="upload_2" id="upload_2">
                 </li>
             </ol>
 
-            <div style="display: inline-block">
+            <div style="display: inline-block; margin-top: 20px; margin-right: 30px;">
                 Delete Laps Stint 1
                 <input type="text" id="inp_del_laps_df1">
                 <button type="button" id="btn_del_laps_df1" py-click="del_laps_df1">Delete</button>
@@ -81,6 +84,13 @@
                 <input type="text" id="inp_del_laps_df2">
                 <button type="button" id="btn_del_laps_df2" py-click="del_laps_df2">Delete</button>
             </div>
+
+            <button class="button" type="button" id="analyze_data" py-click="analyze_data" style="display: block; margin-top: 30px; margin-bottom: 30px;">ANALYZE DATA</button>
+
+            <section style="margin-bottom: 30px;">
+                <div id="session_data_df1" class="session_data" style="display: inline-block;"></div>
+                <div id="session_data_df2" class="session_data" style="display: inline-block"></div>
+            </section>
 
             <section>
                 <div id="laps_df1" class="laps_df1" style="display: inline-block;"></div>

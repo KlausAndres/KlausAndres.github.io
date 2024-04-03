@@ -99,6 +99,10 @@ hr {
     margin: auto;
 }
 
+.session_data {
+    color: var(--color_blue)
+}
+
 
 
 /* very small 0px 
